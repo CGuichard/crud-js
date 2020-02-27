@@ -1,11 +1,18 @@
 var express = require('express');
 var path = require('path');
+var fs = require('fs');
+var marked = require('marked');
 
 var app = express();
 
 app.set('view engine', 'ejs');
+app.use("/static", express.static(path.join(__dirname + '/static/node_modules/')));
+app.use("/css", express.static(path.join(__dirname + '/static/css/')));
+
 app.get('/', function(req, res) {
-    res.render('index.ejs', { title: "CrudJS Index" });
+    var path = __dirname + '/README.md';
+    var file = fs.readFileSync(path, 'utf8');
+    res.send(marked(file.toString()));
 });
 
 app.get('/demo', function(req, res) {
