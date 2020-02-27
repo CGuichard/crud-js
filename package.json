@@ -1,0 +1,9 @@
+{
+  "name": "crud-js",
+  "version": "0.0.1",
+  "description": "Javascript front-end CRUD webcomponent",
+  "main": "index.js",
+  "repository": "https://github.com/CGuichard/crud-js.git",
+  "author": "Clément GUICHARD <clement.guichard0@gmail.com>",
+  "license": "MIT"
+}
