@@ -3,12 +3,13 @@ var path = require('path');
 
 var app = express();
 
+app.set('view engine', 'ejs');
 app.get('/', function(req, res) {
-    res.send("CrudJS index");
+    res.render('index.ejs', { title: "CrudJS Index" });
 });
 
 app.get('/demo', function(req, res) {
-    res.send("CrudJS demo");
+    res.render('demo.ejs', { title: "CrudJS Demo" });
 });
 
 var port = 5000;
