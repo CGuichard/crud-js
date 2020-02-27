@@ -8,6 +8,8 @@ var app = express();
 app.set('view engine', 'ejs');
 app.use("/static", express.static(path.join(__dirname + '/static/node_modules/')));
 app.use("/css", express.static(path.join(__dirname + '/static/css/')));
+app.use("/js", express.static(path.join(__dirname + '/static/js/')));
+app.use("/images", express.static(path.join(__dirname + '/images/')));
 
 app.get('/', function(req, res) {
     var path = __dirname + '/README.md';
@@ -16,7 +18,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/demo', function(req, res) {
-    res.render('demo.ejs', { title: "CrudJS Demo" });
+    res.render('demo.ejs');
 });
 
 var port = 5000;

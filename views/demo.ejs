@@ -2,21 +2,33 @@
 <html lang="en" dir="ltr">
     <head>
         <meta charset="utf-8">
-        <title><%= title %></title>
+        <title>CrudJS Demo</title>
         <meta name="description" content="CrudJS demo page.">
+        <link rel="icon" href="/images/crud-js.ico" />
         <link rel="stylesheet" href="/static/@fortawesome/fontawesome-free/css/all.min.css">
         <link rel="stylesheet" href="/static/bootstrap-material-design/dist/css/bootstrap-material-design.min.css">
         <link rel="stylesheet" href="/css/crud-js.css">
     </head>
-    <body>
-        <div class="container text-center pt-4">
-            <h1 class="display-1 mt-4 mb-4 text-primary"><strong><%= title %></strong></h1>
+    <body class="container bg-info">
+
+        <div id="demo-header" class="card text-center pt-4 mt-4 mb-4">
+            <div class="card-body">
+                <img style="max-width:80%;" src="/images/crud-js.png" alt="">
+            </div>
         </div>
+
+        <div id="demo-content" class="card">
+          <div class="card-body">
+            Demo content.
+          </div>
+        </div>
+
         <script src="/static/jquery/dist/jquery.min.js" charset="utf-8"></script>
         <script src="/static/popper.js/dist/umd/popper.min.js" charset="utf-8"></script>
         <script src="/static/bootstrap-material-design/dist/js/bootstrap-material-design.min.js" charset="utf-8"></script>
         <script>
             $(document).ready(function() { $('body').bootstrapMaterialDesign(); });
         </script>
+        <script src="/js/demo.js" charset="utf-8"></script>
     </body>
 </html>
