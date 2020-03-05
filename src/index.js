@@ -53,41 +53,20 @@ exampleTupleD2.oldValue = ["oldD2", 0];
 
 let exampleTupleN1 = ["N1", 7];
 exampleTupleN1.status = 'N';
-exampleTupleN1.oldValue = ["oldN1", 0];
 
 let exampleTupleN2 = ["N2", 8];
 exampleTupleN2.status = 'N';
-exampleTupleN2.oldValue = ["oldN2", 0];
 
 const exampleData = [
+    exampleTupleM2,
     exampleTupleS1,
     exampleTupleD1,
+    exampleTupleD2,
     exampleTupleN1,
     exampleTupleM1,
-    exampleTupleN1
+    exampleTupleN2
 ];
+console.log(exampleData);
+const cr = new CrudRequest("http://localhost:1234/post  ", addmsg);
 
-const cr = new CrudRequest("http://postman-echo.com/post", addmsg);
-
-console.info(exampleData);
 cr.send(exampleData);
-
-/**
- * crud request ->
- * entrée
- *
- *
- *
- * url, fonction à appeler à la réception de la réponse dans le constructeur
- *
- * fonction send (old et new en param)
- *
- * old -> meme format que le get
- * new -> tuple.status S M N D
- *
- * si les urls sont les mêmes on fusionne les requêtes
- *
- * fait la requete
- * envoit
- * retourne la réponse
- */
