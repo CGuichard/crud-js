@@ -21,3 +21,5 @@
  */
 
 // Example: import { something } from ''
+
+import './crudComponent.js';
