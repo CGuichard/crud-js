@@ -21,6 +21,7 @@
  */
 
 import { createElement, resetElementHTML } from "./utils.js";
+import CrudTable from "./crudTable.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -79,7 +80,7 @@ class CrudComponent extends HTMLElement {
 
         if(settingsOk) {
             this.setAttr("data", null);
-            this.setAttr("table", document.createElement("div"));
+            this.setAttr("table", new CrudTable(this));
             if(this.isEditable()) {
                 const self = this;
                 this.getAttr("saveButton").onclick = function() {
@@ -148,7 +149,8 @@ class CrudComponent extends HTMLElement {
 
     displayTable() {
         const table = this.getAttr("table");
-        this.setChild(table);
+        table.render();
+        this.setChild(table.getElement());
     }
 
     // Events
