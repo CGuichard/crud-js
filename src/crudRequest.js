@@ -1,5 +1,5 @@
 /**
- * @file module to send and retrieve data for crudjs
+ * @file module to send and retrieve values for crudjs
  *
  * @author Kévin Delcourt
  * @version 0.0.1
@@ -8,7 +8,7 @@
 
 /* jshint esversion: 6 */
 
-function responseTreatment(self,action,data){
+function responseTreatment(self,action,values){
     switch (action.request) {
         case "NEW":
             action.result.forEach(function(val,i){
@@ -16,7 +16,7 @@ function responseTreatment(self,action,data){
                     self.addMessageFunc("warning","Erreur","Ajout de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
                     self.noError = false;
                 }else{
-                    let el = data.find(el => el.join('&') === action.new_values[i].join('&'));
+                    let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                     el.status = 'S';
                     el.oldValue = action.new_values[i];
                 }
@@ -28,7 +28,7 @@ function responseTreatment(self,action,data){
                     self.addMessageFunc("warning","Erreur","Modification de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
                     self.noError = false;
                 }else{
-                    let el = data.find(el => el.join('&') === action.new_values[i].join('&'));
+                    let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                     el.status = 'S';
                     el.oldValue = action.new_values[i];
                 }
@@ -40,7 +40,7 @@ function responseTreatment(self,action,data){
                     self.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
                     self.noError = false;
                 }else
-                    delete data[data.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'))];
+                    delete values[values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'))];
                 
             });
             break;
@@ -54,7 +54,7 @@ class CrudRequest {
         this.addMessageFunc = addMessageFunc;
     }
 
-    send(data) {
+    send(values) {
         let newNewValues = [];
         let modifyOldValues = [];
         let modifyNewValues = [];
@@ -62,7 +62,7 @@ class CrudRequest {
 
         this.noError = true;
         let self = this;
-        data.forEach(function(element){
+        values.forEach(function(element){
             switch (element.status) {
                 case 'N':
                     newNewValues.push(element);
@@ -107,7 +107,7 @@ class CrudRequest {
                     self.noError = false;
                     self.addMessageFunc("danger","Error","Bad response");
                 }else
-                    responseTreatment(self, action, data);
+                    responseTreatment(self, action, values);
             });
             if(self.noError)
                 self.addMessageFunc("success","OK","Sauvegarde effectuée");
@@ -123,8 +123,8 @@ class CrudRequest {
             return response.json();
         }).then(function (json){
             json.values.forEach(value => {
-                value.status = 'S';
                 value.oldValue = [...value];
+                value.status = 'S';
             });
             callback(json);
         }).catch(function (error) {
