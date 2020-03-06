@@ -7,14 +7,31 @@
   "author": "Clément GUICHARD <clement.guichard0@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "ejs": "^3.0.1",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.8.4",
     "@babel/plugin-transform-classes": "^7.8.3",
     "@babel/preset-env": "^7.8.4",
     "braintree-jsdoc-template": "^3.3.0",
-    "ejs": "^3.0.1",
-    "express": "^4.17.1",
     "jsdoc": "^3.6.3",
-    "uglify-js": "^3.8.0"
+    "rollup": "^1.32.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-uglify": "^6.0.4"
+  },
+  "scripts": {
+    "start": "npm run start:back && npm run start:front",
+    "start:back": "npm install",
+    "start:front": "cd static; npm install",
+    "build": "npm run build:js && npm run build:docs",
+    "build:js": "rollup --config=.rollup.config.js",
+    "build:docs": "jsdoc --configure .jsdoc.json --verbose",
+    "clean": "npm run clean:build && npm run clean:node",
+    "clean:build": "npm run clean:docs && npm run clean:dist",
+    "clean:docs": "rm -rf docs/",
+    "clean:dist": "rm -rf dist/",
+    "clean:node": "rm -rf node_modules/ static/node_modules/"
   }
 }
