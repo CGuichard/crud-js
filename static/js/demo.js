@@ -8,4 +8,4 @@
  *
  */
 
-console.log("CrudJS: This page is for demonstration purposes. It is by no means the only way to use CrudJS.");
+console.log("CrudJS: This page is for demonstration purposes. It is by no means the only possible way to use CrudJS.");

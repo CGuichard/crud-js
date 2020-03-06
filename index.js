@@ -27,6 +27,43 @@ app.get('/demo', function(req, res) {
     res.render('demo.ejs');
 });
 
+app.get('/demo/data', function(req, res) {
+    var json = {
+        "columns": [
+            {
+                "name": "Name",
+                "type": "text",
+                "options": {}
+            },
+            {
+                "name": "Age",
+                "type": "int",
+                "options": {}
+            },
+            {
+                "name": "Gender",
+                "type": "select",
+                "options": {
+                    "values": ["Men", "Women", "Other"]
+                }
+            },
+            {
+                "name": "Busy day",
+                "type": "select-chips",
+                "options": {
+                    "values": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                }
+            }
+        ],
+        "values": [
+            ["Thomas", 16, "Men", ["Monday", "Tuesday", "Wednesday"]],
+            ["Giovanni", 54, "Women", ["Thursday", "Friday"]],
+            ["Super Cookie", 1, "Other", []]
+        ]
+    };
+    res.json(json);
+});
+
 app.get('/docs', function(req, res) {
     res.send('Docs');
 });
