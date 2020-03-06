@@ -27,46 +27,19 @@ function addmsg(bsclass, title, message) {
     console.log(bsclass, title, message);
 }
 
-let exampleTupleS1 = ["S1", 1];
-exampleTupleS1.status = 'S';
-exampleTupleS1.oldValue = ["oldS1", 0];
+const cr = new CrudRequest("http://localhost:1234/test  ", addmsg);
 
-let exampleTupleS2 = ["S2", 2];
-exampleTupleS2.status = 'S';
-exampleTupleS2.oldValue = ["oldS2", 0];
+cr.get((data) => { 
+    console.log(data);
+    data.values[0].status = 'M';
+    data.values[0][0] = "BBTM";
 
-let exampleTupleM1 = ["M1", 3];
-exampleTupleM1.status = 'M';
-exampleTupleM1.oldValue = ["oldM1", 0];
+    data.values[1].status = 'D';
 
-let exampleTupleM2 = ["M2", 4];
-exampleTupleM2.status = 'M';
-exampleTupleM2.oldValue = ["oldM2", 0];
+    let nv = [ "Nouvelle salle"];
+    nv.status = 'N';
+    data.values.push(nv);
+    console.log(data);
+    cr.send(data.values);
+});
 
-let exampleTupleD1 = ["D1", 5];
-exampleTupleD1.status = 'D';
-exampleTupleD1.oldValue = ["oldD1", 0];
-
-let exampleTupleD2 = ["D2", 6];
-exampleTupleD2.status = 'D';
-exampleTupleD2.oldValue = ["oldD2", 0];
-
-let exampleTupleN1 = ["N1", 7];
-exampleTupleN1.status = 'N';
-
-let exampleTupleN2 = ["N2", 8];
-exampleTupleN2.status = 'N';
-
-const exampleData = [
-    exampleTupleM2,
-    exampleTupleS1,
-    exampleTupleD1,
-    exampleTupleD2,
-    exampleTupleN1,
-    exampleTupleM1,
-    exampleTupleN2
-];
-console.log(exampleData);
-const cr = new CrudRequest("http://localhost:1234/post  ", addmsg);
-
-cr.send(exampleData);
