@@ -21,6 +21,8 @@
  */
 
 import { createElement, isHidden, resetElementHTML } from "./utils.js";
+import { CrudAddLine } from "./crudAddLine.js";
+import { CrudEditLine } from "./crudEditLine.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -34,7 +36,7 @@ class CrudTable {
         this.crudComponent = crudComponent;
         this.element = createElement("<div class=\"table-responsive\"></div>");
         this.element.innerHTML = `
-        <table class="table table-hover">
+        <table class="table">
           <thead class="thead-light">
           </thead>
           <tbody>
@@ -79,7 +81,17 @@ class CrudTable {
     }
 
     renderLines() {
+        if(this.getCrudComponent().isEditable()) {
+            this.addCrudLine(new CrudAddLine(this));
+        }
+        const values = this.crudComponent.getData().values;
+        for(var i = 0; i < values.length; i++) {
+            this.addCrudLine(new CrudEditLine(values[i], this));
+        }
+    }
 
+    addCrudLine(line) {
+        this.tbody.appendChild(line.getElement());
     }
 
     updateLineNumbers() {
