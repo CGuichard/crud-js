@@ -111,12 +111,13 @@ class CrudRequest {
     }
 
     handle(action, values) {
+        const self = this;
         switch(action.request) {
             case "NEW":
                 action.result.forEach(function(val,i) {
                     if(val[0] === "ERROR") {
-                        this.addMessageFunc("warning","Erreur","Ajout de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
-                        this.noError = false;
+                        self.addMessageFunc("warning","Erreur","Ajout de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                         el.status = 'S';
@@ -127,8 +128,8 @@ class CrudRequest {
             case "MODIFIED":
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
-                        this.addMessageFunc("warning","Erreur","Modification de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
-                        this.noError = false;
+                        self.addMessageFunc("warning","Erreur","Modification de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                         el.status = 'S';
@@ -139,8 +140,8 @@ class CrudRequest {
             case "DELETED":
                 action.result.forEach( function(val,i){
                     if(val[0] === "ERROR") {
-                        this.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
-                        this.noError = false;
+                        self.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.noError = false;
                     } else {
                         delete values[values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'))];
                     }

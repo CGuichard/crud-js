@@ -1397,12 +1397,14 @@ var CrudRequest = /*#__PURE__*/function () {
   }, {
     key: "handle",
     value: function handle(action, values) {
+      var self = this;
+
       switch (action.request) {
         case "NEW":
           action.result.forEach(function (val, i) {
             if (val[0] === "ERROR") {
-              this.addMessageFunc("warning", "Erreur", "Ajout de la ligne '" + action.new_values[i].join(', ') + "' impossible: " + val[1]);
-              this.noError = false;
+              self.addMessageFunc("warning", "Erreur", "Ajout de la ligne '" + action.new_values[i].join(', ') + "' impossible: " + val[1]);
+              self.noError = false;
             } else {
               var el = values.find(function (el) {
                 return el.join('&') === action.new_values[i].join('&');
@@ -1416,8 +1418,8 @@ var CrudRequest = /*#__PURE__*/function () {
         case "MODIFIED":
           action.result.forEach(function (val, i) {
             if (val[0] === "ERROR") {
-              this.addMessageFunc("warning", "Erreur", "Modification de la ligne '" + action.new_values[i].join(', ') + "' impossible: " + val[1]);
-              this.noError = false;
+              self.addMessageFunc("warning", "Erreur", "Modification de la ligne '" + action.new_values[i].join(', ') + "' impossible: " + val[1]);
+              self.noError = false;
             } else {
               var el = values.find(function (el) {
                 return el.join('&') === action.new_values[i].join('&');
@@ -1431,8 +1433,8 @@ var CrudRequest = /*#__PURE__*/function () {
         case "DELETED":
           action.result.forEach(function (val, i) {
             if (val[0] === "ERROR") {
-              this.addMessageFunc("warning", "Erreur", "Suppression de la ligne '" + action.old_values[i].join(', ') + "' impossible: " + val[1]);
-              this.noError = false;
+              self.addMessageFunc("warning", "Erreur", "Suppression de la ligne '" + action.old_values[i].join(', ') + "' impossible: " + val[1]);
+              self.noError = false;
             } else {
               delete values[values.findIndex(function (el) {
                 return el.oldValue.join('&') === action.old_values[i].join('&');
@@ -1494,7 +1496,7 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
       this.resetDisplay();
       this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
       this.setAttr("errorElement", createElement("\n            <div class=\"alert alert-warning\" role=\"alert\">\n                <strong><span class=\"crudjs-error-t\">ERROR</span>:</strong>\n                <span class=\"crudjs-error-m\">Unknown</span>\n            </div>\n            "));
-      this.setAttr("messagesElement", createElement("<div style=\"position:fixed;right:10px;top:10px;\"></div>"));
+      this.setAttr("messagesElement", createElement("<div style=\"position:fixed;right:10px;top:10px;z-index:100;\"></div>"));
 
       if (url === null && settingsOk) {
         settingsOk = false;
@@ -1566,8 +1568,18 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
 
   }, {
     key: "addMessage",
-    value: function addMessage(typeM, titleM, textM) {
-      this.getAttr("messagesElement").appendChild(createElement("\n            <div style=\"box-shadow:2px 2px 2px black;\" class=\"alert alert-" + typeM + " alert-dismissible fade show\" role=\"alert\">\n              <strong>" + titleM + ":</strong> " + textM + "\n              <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>\n            </div>\n        "));
+    value: function addMessage(typeM, titleM, textM, timeM) {
+      if (timeM == undefined) {
+        timeM = 60000;
+      }
+
+      var toast = createElement("\n            <div style=\"box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;\" class=\"alert alert-" + typeM + " alert-dismissible fade show\" role=\"alert\">\n              <strong>" + titleM + ":</strong> " + textM + "\n              <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>\n            </div>\n        ");
+      this.getAttr("messagesElement").appendChild(toast);
+      setTimeout(function () {
+        if (toast.parentNode != null) {
+          toast.getElementsByClassName('close')[0].click();
+        }
+      }, timeM);
     }
   }, {
     key: "resetDisplay",

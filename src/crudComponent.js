@@ -58,7 +58,7 @@ class CrudComponent extends HTMLElement {
             </div>
             `)
         );
-        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;top:10px;"></div>`));
+        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;top:10px;z-index:100;"></div>`));
 
         if(url === null && settingsOk) {
             settingsOk = false;
@@ -124,13 +124,22 @@ class CrudComponent extends HTMLElement {
 
     // Displays
 
-    addMessage(typeM, titleM, textM) {
-        this.getAttr("messagesElement").appendChild(createElement(`
-            <div style="box-shadow:2px 2px 2px black;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
+    addMessage(typeM, titleM, textM, timeM) {
+        if(timeM == undefined) {
+            timeM = 60000;
+        }
+        const toast = createElement(`
+            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
               <strong>`+titleM+`:</strong> `+textM+`
               <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
-        `));
+        `);
+        this.getAttr("messagesElement").appendChild(toast);
+        setTimeout(function() {
+            if(toast.parentNode != null) {
+                toast.getElementsByClassName('close')[0].click();
+            }
+        }, timeM);
     }
 
     resetDisplay() {

@@ -152,7 +152,7 @@ class CrudComponent extends HTMLElement {
             &lt;/div>
             `)
         );
-        this.setAttr("messagesElement", createElement(`&lt;div style="position:fixed;right:10px;top:10px;">&lt;/div>`));
+        this.setAttr("messagesElement", createElement(`&lt;div style="position:fixed;right:10px;top:10px;z-index:100;">&lt;/div>`));
 
         if(url === null &amp;&amp; settingsOk) {
             settingsOk = false;
@@ -218,13 +218,22 @@ class CrudComponent extends HTMLElement {
 
     // Displays
 
-    addMessage(typeM, titleM, textM) {
-        this.getAttr("messagesElement").appendChild(createElement(`
-            &lt;div style="box-shadow:2px 2px 2px black;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
+    addMessage(typeM, titleM, textM, timeM) {
+        if(timeM == undefined) {
+            timeM = 60000;
+        }
+        const toast = createElement(`
+            &lt;div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
               &lt;strong>`+titleM+`:&lt;/strong> `+textM+`
               &lt;button type="button" class="close" data-dismiss="alert" aria-label="Close">&lt;span aria-hidden="true">&amp;times;&lt;/span>&lt;/button>
             &lt;/div>
-        `));
+        `);
+        this.getAttr("messagesElement").appendChild(toast);
+        setTimeout(function() {
+            if(toast.parentNode != null) {
+                toast.getElementsByClassName('close')[0].click();
+            }
+        }, timeM);
     }
 
     resetDisplay() {
