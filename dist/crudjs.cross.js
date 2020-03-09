@@ -1280,6 +1280,173 @@ var CrudTable = /*#__PURE__*/function () {
 
 CrudTable.ID = 0;
 /**
+ * @file module to send and retrieve values for crudjs
+ *
+ * @author Kévin Delcourt
+ * @version 0.0.1
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Options JSHint
+ * ------------------------------------------------------------------------
+ */
+
+/* jshint esversion: 6 */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+var CrudRequest = /*#__PURE__*/function () {
+  function CrudRequest(url, addMessageFunc) {
+    _classCallCheck(this, CrudRequest);
+
+    this.url = url;
+    this.addMessageFunc = addMessageFunc;
+  }
+
+  _createClass(CrudRequest, [{
+    key: "get",
+    value: function get(callback, errorCallback) {
+      fetch(this.url, {
+        method: "GET"
+      }).then(function (response) {
+        return response.json();
+      }).then(function (json) {
+        json.values.forEach(function (value) {
+          value.oldValue = _toConsumableArray(value);
+          value.status = 'S';
+        });
+        callback(json);
+      })["catch"](function (error) {
+        errorCallback(error);
+      });
+    }
+  }, {
+    key: "send",
+    value: function send(values) {
+      var newNewValues = [];
+      var modifyOldValues = [];
+      var modifyNewValues = [];
+      var deletedOldValues = [];
+      this.noError = true;
+      var self = this;
+      values.forEach(function (element) {
+        switch (element.status) {
+          case 'N':
+            newNewValues.push(element);
+            break;
+
+          case 'M':
+            modifyOldValues.push(element.oldValue);
+            modifyNewValues.push(element);
+            break;
+
+          case 'D':
+            deletedOldValues.push(element.oldValue);
+            break;
+        }
+      });
+      var headers = {
+        "Content-Type": "application/json"
+      };
+
+      if (typeof CSRF !== 'undefined' && CSRF !== null) {
+        headers['X-CSRFToken'] = CSRF;
+      }
+
+      fetch(self.url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          "actions": [{
+            "request": "NEW",
+            "new_values": newNewValues
+          }, {
+            "request": "MODIFIED",
+            "old_values": modifyOldValues,
+            "new_values": modifyNewValues
+          }, {
+            "request": "DELETED",
+            "old_values": deletedOldValues
+          }]
+        })
+      }).then(function (response) {
+        return response.json();
+      }).then(function (json) {
+        json.actions.forEach(function (action) {
+          if (!("result" in action)) {
+            self.noError = false;
+            self.addMessageFunc("danger", "Error", "Bad response");
+          } else {
+            self.handle(action, values);
+          }
+        });
+
+        if (self.noError) {
+          self.addMessageFunc("success", "OK", "Sauvegarde effectuée");
+        }
+      })["catch"](function (error) {
+        console.error(error);
+      });
+    }
+  }, {
+    key: "handle",
+    value: function handle(action, values) {
+      switch (action.request) {
+        case "NEW":
+          action.result.forEach(function (val, i) {
+            if (val[0] === "ERROR") {
+              this.addMessageFunc("warning", "Erreur", "Ajout de la ligne '" + action.new_values[i].join(', ') + "' impossible: " + val[1]);
+              this.noError = false;
+            } else {
+              var el = values.find(function (el) {
+                return el.join('&') === action.new_values[i].join('&');
+              });
+              el.status = 'S';
+              el.oldValue = action.new_values[i];
+            }
+          });
+          break;
+
+        case "MODIFIED":
+          action.result.forEach(function (val, i) {
+            if (val[0] === "ERROR") {
+              this.addMessageFunc("warning", "Erreur", "Modification de la ligne '" + action.new_values[i].join(', ') + "' impossible: " + val[1]);
+              this.noError = false;
+            } else {
+              var el = values.find(function (el) {
+                return el.join('&') === action.new_values[i].join('&');
+              });
+              el.status = 'S';
+              el.oldValue = action.new_values[i];
+            }
+          });
+          break;
+
+        case "DELETED":
+          action.result.forEach(function (val, i) {
+            if (val[0] === "ERROR") {
+              this.addMessageFunc("warning", "Erreur", "Suppression de la ligne '" + action.old_values[i].join(', ') + "' impossible: " + val[1]);
+              this.noError = false;
+            } else {
+              delete values[values.findIndex(function (el) {
+                return el.oldValue.join('&') === action.old_values[i].join('&');
+              })];
+            }
+          });
+          break;
+      }
+    }
+  }]);
+
+  return CrudRequest;
+}();
+/**
  * @file This file contains the CrudJS webcomponent.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
@@ -1293,8 +1460,16 @@ CrudTable.ID = 0;
  * ------------------------------------------------------------------------
  */
 
+
 var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
   _inherits(CrudComponent, _HTMLElement);
+
+  _createClass(CrudComponent, null, [{
+    key: "observedAttributes",
+    get: function get() {
+      return ['url', 'save-button', 'editable'];
+    }
+  }]);
 
   function CrudComponent() {
     var _this;
@@ -1319,6 +1494,7 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
       this.resetDisplay();
       this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
       this.setAttr("errorElement", createElement("\n            <div class=\"alert alert-warning\" role=\"alert\">\n                <strong><span class=\"crudjs-error-t\">ERROR</span>:</strong>\n                <span class=\"crudjs-error-m\">Unknown</span>\n            </div>\n            "));
+      this.setAttr("messagesElement", createElement("<div style=\"position:fixed;right:10px;top:10px;\"></div>"));
 
       if (url === null && settingsOk) {
         settingsOk = false;
@@ -1345,7 +1521,9 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
 
       if (settingsOk) {
         this.setAttr("data", null);
+        this.setAttr("request", new CrudRequest(this.getUrl(), this.getAddMessageWrapper()));
         this.setAttr("table", new CrudTable(this));
+        document.body.appendChild(this.getAttr("messagesElement"));
 
         if (this.isEditable()) {
           var self = this;
@@ -1359,35 +1537,60 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
       } else {
         this.displayError("Error", "Incorrect configuration. If you want to have an editable crud don't forget to give it a save-button.");
       }
-    }
+    } // Requests
+
   }, {
     key: "load",
-    // Requests
     value: function load() {
-      var _this2 = this;
-
       this.displayLoading();
-      fetch(this.getUrl()).then(function (response) {
-        return response.json();
-      }).then(function (json) {
-        _this2.parseData(json);
-
-        _this2.displayTable();
-      })["catch"](function (err) {
-        _this2.displayError("Error", "An error occured while trying to fetch resource. See : " + err);
-      });
+      this.getAttr("request").get(this.getDataLoadedWrapper(), this.getWrongUrlWrapper());
     }
   }, {
-    key: "parseData",
-    value: function parseData(data) {
+    key: "wrongUrl",
+    value: function wrongUrl(error) {
+      this.displayError("Error", "An error occured while trying to fetch resource. See : " + error);
+    }
+  }, {
+    key: "dataLoaded",
+    value: function dataLoaded(json) {
+      this.setAttr("data", json);
+      this.displayTable();
+    }
+  }, {
+    key: "save",
+    value: function save() {
+      if (this.getData()) {
+        this.getAttr("request").send(this.getValues());
+      }
+    } // Displays
+
+  }, {
+    key: "addMessage",
+    value: function addMessage(typeM, titleM, textM) {
+      this.getAttr("messagesElement").appendChild(createElement("\n            <div style=\"box-shadow:2px 2px 2px black;\" class=\"alert alert-" + typeM + " alert-dismissible fade show\" role=\"alert\">\n              <strong>" + titleM + ":</strong> " + textM + "\n              <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>\n            </div>\n        "));
+    }
+  }, {
+    key: "resetDisplay",
+    value: function resetDisplay() {
+      resetElementHTML(this);
+    }
+  }, {
+    key: "displayLoading",
+    value: function displayLoading() {
+      this.setChild(this.getAttr("loadElement"));
+    }
+  }, {
+    key: "displayError",
+    value: function displayError(errorTitle, errorMessage) {
+      var errorElement = this.getAttr("errorElement");
       var _iteratorNormalCompletion23 = true;
       var _didIteratorError23 = false;
       var _iteratorError23 = undefined;
 
       try {
-        for (var _iterator23 = data.values[Symbol.iterator](), _step23; !(_iteratorNormalCompletion23 = (_step23 = _iterator23.next()).done); _iteratorNormalCompletion23 = true) {
-          var line = _step23.value;
-          line.status = "S";
+        for (var _iterator23 = errorElement.getElementsByClassName('crudjs-error-t')[Symbol.iterator](), _step23; !(_iteratorNormalCompletion23 = (_step23 = _iterator23.next()).done); _iteratorNormalCompletion23 = true) {
+          var title = _step23.value;
+          title.textContent = errorTitle;
         }
       } catch (err) {
         _didIteratorError23 = true;
@@ -1404,38 +1607,14 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
         }
       }
 
-      this.setAttr("data", data);
-    }
-  }, {
-    key: "save",
-    value: function save() {
-      if (this.getData()) {
-        console.log("SAVE", this.getData());
-      }
-    } // Displays
-
-  }, {
-    key: "resetDisplay",
-    value: function resetDisplay() {
-      resetElementHTML(this);
-    }
-  }, {
-    key: "displayLoading",
-    value: function displayLoading() {
-      this.setChild(this.getAttr("loadElement"));
-    }
-  }, {
-    key: "displayError",
-    value: function displayError(errorTitle, errorMessage) {
-      var errorElement = this.getAttr("errorElement");
       var _iteratorNormalCompletion24 = true;
       var _didIteratorError24 = false;
       var _iteratorError24 = undefined;
 
       try {
-        for (var _iterator24 = errorElement.getElementsByClassName('crudjs-error-t')[Symbol.iterator](), _step24; !(_iteratorNormalCompletion24 = (_step24 = _iterator24.next()).done); _iteratorNormalCompletion24 = true) {
-          var title = _step24.value;
-          title.textContent = errorTitle;
+        for (var _iterator24 = errorElement.getElementsByClassName('crudjs-error-m')[Symbol.iterator](), _step24; !(_iteratorNormalCompletion24 = (_step24 = _iterator24.next()).done); _iteratorNormalCompletion24 = true) {
+          var msg = _step24.value;
+          msg.textContent = errorMessage;
         }
       } catch (err) {
         _didIteratorError24 = true;
@@ -1448,30 +1627,6 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
         } finally {
           if (_didIteratorError24) {
             throw _iteratorError24;
-          }
-        }
-      }
-
-      var _iteratorNormalCompletion25 = true;
-      var _didIteratorError25 = false;
-      var _iteratorError25 = undefined;
-
-      try {
-        for (var _iterator25 = errorElement.getElementsByClassName('crudjs-error-m')[Symbol.iterator](), _step25; !(_iteratorNormalCompletion25 = (_step25 = _iterator25.next()).done); _iteratorNormalCompletion25 = true) {
-          var msg = _step25.value;
-          msg.textContent = errorMessage;
-        }
-      } catch (err) {
-        _didIteratorError25 = true;
-        _iteratorError25 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion25 && _iterator25["return"] != null) {
-            _iterator25["return"]();
-          }
-        } finally {
-          if (_didIteratorError25) {
-            throw _iteratorError25;
           }
         }
       }
@@ -1519,6 +1674,11 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
       return this.getAttr("data");
     }
   }, {
+    key: "getValues",
+    value: function getValues() {
+      return this.getData().values;
+    }
+  }, {
     key: "getUrl",
     value: function getUrl() {
       return this.getAttr("url");
@@ -1533,11 +1693,40 @@ var CrudComponent = /*#__PURE__*/function (_HTMLElement) {
     value: function setChild(child) {
       this.resetDisplay();
       this.appendChild(child);
+    } // Function wrappers
+
+  }, {
+    key: "getAddMessageWrapper",
+    value: function getAddMessageWrapper() {
+      var self = this;
+
+      var addMessageFuncWrapper = function addMessageFuncWrapper(typeM, titleM, textM) {
+        self.addMessage(typeM, titleM, textM);
+      };
+
+      return addMessageFuncWrapper;
     }
-  }], [{
-    key: "observedAttributes",
-    get: function get() {
-      return ['url', 'save-button', 'editable'];
+  }, {
+    key: "getDataLoadedWrapper",
+    value: function getDataLoadedWrapper() {
+      var self = this;
+
+      var dataLoadedWrapper = function dataLoadedWrapper(json) {
+        self.dataLoaded(json);
+      };
+
+      return dataLoadedWrapper;
+    }
+  }, {
+    key: "getWrongUrlWrapper",
+    value: function getWrongUrlWrapper() {
+      var self = this;
+
+      var wrongUrlWrapper = function wrongUrlWrapper(error) {
+        self.wrongUrl(error);
+      };
+
+      return wrongUrlWrapper;
     }
   }]);
 

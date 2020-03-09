@@ -77,7 +77,7 @@
 
     
 
-    <h3>Classes</h3><ul><li id="CrudAddLine-nav"><a href="CrudAddLine.html">CrudAddLine</a></li><li id="CrudComponent-nav"><a href="CrudComponent.html">CrudComponent</a></li><li id="CrudEditLine-nav"><a href="CrudEditLine.html">CrudEditLine</a></li><li id="CrudField-nav"><a href="CrudField.html">CrudField</a></li><li id="CrudTable-nav"><a href="CrudTable.html">CrudTable</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#createElement">createElement</a></li></ul>
+    <h3>Classes</h3><ul><li id="CrudAddLine-nav"><a href="CrudAddLine.html">CrudAddLine</a></li><li id="CrudComponent-nav"><a href="CrudComponent.html">CrudComponent</a></li><li id="CrudEditLine-nav"><a href="CrudEditLine.html">CrudEditLine</a></li><li id="CrudField-nav"><a href="CrudField.html">CrudField</a></li><li id="CrudRequest-nav"><a href="CrudRequest.html">CrudRequest</a></li><li id="CrudTable-nav"><a href="CrudTable.html">CrudTable</a></li></ul><h3 id="global-nav">Global</h3><ul><li><a href="global.html#createElement">createElement</a></li></ul>
   </nav>
 
   <div id="main">
@@ -116,6 +116,7 @@
 
 import { createElement, resetElementHTML } from "./utils.js";
 import CrudTable from "./crudTable.js";
+import CrudRequest from "./crudRequest.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -124,6 +125,8 @@ import CrudTable from "./crudTable.js";
  */
 
 class CrudComponent extends HTMLElement {
+
+    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
 
     constructor() {
         super();
@@ -149,6 +152,7 @@ class CrudComponent extends HTMLElement {
             &lt;/div>
             `)
         );
+        this.setAttr("messagesElement", createElement(`&lt;div style="position:fixed;right:10px;top:10px;">&lt;/div>`));
 
         if(url === null &amp;&amp; settingsOk) {
             settingsOk = false;
@@ -174,7 +178,9 @@ class CrudComponent extends HTMLElement {
 
         if(settingsOk) {
             this.setAttr("data", null);
+            this.setAttr("request", new CrudRequest(this.getUrl(), this.getAddMessageWrapper()));
             this.setAttr("table", new CrudTable(this));
+            document.body.appendChild(this.getAttr("messagesElement"));
             if(this.isEditable()) {
                 const self = this;
                 this.getAttr("saveButton").onclick = function() {
@@ -188,39 +194,38 @@ class CrudComponent extends HTMLElement {
 
     }
 
-    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
-
     // Requests
 
     load() {
         this.displayLoading();
-        fetch(this.getUrl())
-        .then(response => {
-            return response.json();
-        })
-        .then(json => {
-            this.parseData(json);
-            this.displayTable();
-        })
-        .catch(err => {
-            this.displayError("Error", "An error occured while trying to fetch resource. See : "+err);
-        });
+        this.getAttr("request").get(this.getDataLoadedWrapper(), this.getWrongUrlWrapper());
     }
 
-    parseData(data) {
-        for(const line of data.values) {
-            line.status = "S";
-        }
-        this.setAttr("data", data);
+    wrongUrl(error) {
+        this.displayError("Error", "An error occured while trying to fetch resource. See : " + error);
+    }
+
+    dataLoaded(json) {
+        this.setAttr("data", json);
+        this.displayTable();
     }
 
     save() {
         if(this.getData()) {
-            console.log("SAVE", this.getData());
+            this.getAttr("request").send(this.getValues());
         }
     }
 
     // Displays
+
+    addMessage(typeM, titleM, textM) {
+        this.getAttr("messagesElement").appendChild(createElement(`
+            &lt;div style="box-shadow:2px 2px 2px black;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
+              &lt;strong>`+titleM+`:&lt;/strong> `+textM+`
+              &lt;button type="button" class="close" data-dismiss="alert" aria-label="Close">&lt;span aria-hidden="true">&amp;times;&lt;/span>&lt;/button>
+            &lt;/div>
+        `));
+    }
 
     resetDisplay() {
         resetElementHTML(this);
@@ -281,6 +286,10 @@ class CrudComponent extends HTMLElement {
         return this.getAttr("data");
     }
 
+    getValues() {
+        return this.getData().values;
+    }
+
     getUrl() {
         return this.getAttr("url");
     }
@@ -292,6 +301,32 @@ class CrudComponent extends HTMLElement {
     setChild(child) {
         this.resetDisplay();
         this.appendChild(child);
+    }
+
+    // Function wrappers
+
+    getAddMessageWrapper() {
+        const self = this;
+        const addMessageFuncWrapper = function(typeM, titleM, textM) {
+            self.addMessage(typeM, titleM, textM);
+        };
+        return addMessageFuncWrapper;
+    }
+
+    getDataLoadedWrapper() {
+        const self = this;
+        const dataLoadedWrapper = function(json) {
+            self.dataLoaded(json);
+        };
+        return dataLoadedWrapper;
+    }
+
+    getWrongUrlWrapper() {
+        const self = this;
+        const wrongUrlWrapper = function(error) {
+            self.wrongUrl(error);
+        };
+        return wrongUrlWrapper;
     }
 
 }

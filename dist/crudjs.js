@@ -607,6 +607,159 @@ class CrudTable {
 CrudTable.ID = 0;
 
 /**
+ * @file module to send and retrieve values for crudjs
+ *
+ * @author Kévin Delcourt
+ * @version 0.0.1
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Options JSHint
+ * ------------------------------------------------------------------------
+ */
+
+/* jshint esversion: 6 */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+class CrudRequest {
+
+    constructor(url, addMessageFunc) {
+        this.url = url;
+        this.addMessageFunc = addMessageFunc;
+    }
+
+    get(callback, errorCallback){
+        fetch(this.url, {
+            method: "GET"
+        }).then(function(response) {
+            return response.json();
+        }).then(function(json) {
+            json.values.forEach(value => {
+                value.oldValue = [...value];
+                value.status = 'S';
+            });
+            callback(json);
+        }).catch(function(error) {
+            errorCallback(error);
+        });
+    }
+
+    send(values) {
+        let newNewValues = [];
+        let modifyOldValues = [];
+        let modifyNewValues = [];
+        let deletedOldValues = [];
+
+        this.noError = true;
+        let self = this;
+        values.forEach(function(element){
+            switch(element.status) {
+                case 'N':
+                    newNewValues.push(element);
+                    break;
+                case 'M':
+                    modifyOldValues.push(element.oldValue);
+                    modifyNewValues.push(element);
+                    break;
+                case 'D':
+                    deletedOldValues.push(element.oldValue);
+                    break;
+            }
+        });
+
+        let headers = {"Content-Type":"application/json"};
+        if(typeof CSRF !== 'undefined' && CSRF !== null) {
+            headers['X-CSRFToken'] = CSRF;
+        }
+
+        fetch(self.url, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+                "actions": [
+                    {
+                        "request": "NEW",
+                        "new_values": newNewValues
+                    },
+                    {
+                        "request": "MODIFIED",
+                        "old_values": modifyOldValues,
+                        "new_values": modifyNewValues
+                    },
+                    {
+                        "request": "DELETED",
+                        "old_values": deletedOldValues
+                    }
+                ]
+            })
+        }).then(function(response) {
+            return response.json();
+        }).then(function(json){
+            json.actions.forEach(function(action) {
+                if(!("result" in action)) {
+                    self.noError = false;
+                    self.addMessageFunc("danger","Error","Bad response");
+                } else {
+                    self.handle(action, values);
+                }
+            });
+            if(self.noError) {
+                self.addMessageFunc("success","OK","Sauvegarde effectuée");
+            }
+        }).catch(function(error) {
+            console.error(error);
+        });
+    }
+
+    handle(action, values) {
+        switch(action.request) {
+            case "NEW":
+                action.result.forEach(function(val,i) {
+                    if(val[0] === "ERROR") {
+                        this.addMessageFunc("warning","Erreur","Ajout de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        this.noError = false;
+                    } else {
+                        let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
+                        el.status = 'S';
+                        el.oldValue = action.new_values[i];
+                    }
+                });
+                break;
+            case "MODIFIED":
+                action.result.forEach( function(val,i) {
+                    if(val[0] === "ERROR") {
+                        this.addMessageFunc("warning","Erreur","Modification de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        this.noError = false;
+                    } else {
+                        let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
+                        el.status = 'S';
+                        el.oldValue = action.new_values[i];
+                    }
+                });
+                break;
+            case "DELETED":
+                action.result.forEach( function(val,i){
+                    if(val[0] === "ERROR") {
+                        this.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
+                        this.noError = false;
+                    } else {
+                        delete values[values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'))];
+                    }
+                });
+                break;
+        }
+    }
+
+}
+
+/**
  * @file This file contains the CrudJS webcomponent.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
@@ -621,6 +774,8 @@ CrudTable.ID = 0;
  */
 
 class CrudComponent extends HTMLElement {
+
+    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
 
     constructor() {
         super();
@@ -646,6 +801,7 @@ class CrudComponent extends HTMLElement {
             </div>
             `)
         );
+        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;top:10px;"></div>`));
 
         if(url === null && settingsOk) {
             settingsOk = false;
@@ -671,7 +827,9 @@ class CrudComponent extends HTMLElement {
 
         if(settingsOk) {
             this.setAttr("data", null);
+            this.setAttr("request", new CrudRequest(this.getUrl(), this.getAddMessageWrapper()));
             this.setAttr("table", new CrudTable(this));
+            document.body.appendChild(this.getAttr("messagesElement"));
             if(this.isEditable()) {
                 const self = this;
                 this.getAttr("saveButton").onclick = function() {
@@ -685,39 +843,38 @@ class CrudComponent extends HTMLElement {
 
     }
 
-    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
-
     // Requests
 
     load() {
         this.displayLoading();
-        fetch(this.getUrl())
-        .then(response => {
-            return response.json();
-        })
-        .then(json => {
-            this.parseData(json);
-            this.displayTable();
-        })
-        .catch(err => {
-            this.displayError("Error", "An error occured while trying to fetch resource. See : "+err);
-        });
+        this.getAttr("request").get(this.getDataLoadedWrapper(), this.getWrongUrlWrapper());
     }
 
-    parseData(data) {
-        for(const line of data.values) {
-            line.status = "S";
-        }
-        this.setAttr("data", data);
+    wrongUrl(error) {
+        this.displayError("Error", "An error occured while trying to fetch resource. See : " + error);
+    }
+
+    dataLoaded(json) {
+        this.setAttr("data", json);
+        this.displayTable();
     }
 
     save() {
         if(this.getData()) {
-            console.log("SAVE", this.getData());
+            this.getAttr("request").send(this.getValues());
         }
     }
 
     // Displays
+
+    addMessage(typeM, titleM, textM) {
+        this.getAttr("messagesElement").appendChild(createElement(`
+            <div style="box-shadow:2px 2px 2px black;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
+              <strong>`+titleM+`:</strong> `+textM+`
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+        `));
+    }
 
     resetDisplay() {
         resetElementHTML(this);
@@ -778,6 +935,10 @@ class CrudComponent extends HTMLElement {
         return this.getAttr("data");
     }
 
+    getValues() {
+        return this.getData().values;
+    }
+
     getUrl() {
         return this.getAttr("url");
     }
@@ -789,6 +950,32 @@ class CrudComponent extends HTMLElement {
     setChild(child) {
         this.resetDisplay();
         this.appendChild(child);
+    }
+
+    // Function wrappers
+
+    getAddMessageWrapper() {
+        const self = this;
+        const addMessageFuncWrapper = function(typeM, titleM, textM) {
+            self.addMessage(typeM, titleM, textM);
+        };
+        return addMessageFuncWrapper;
+    }
+
+    getDataLoadedWrapper() {
+        const self = this;
+        const dataLoadedWrapper = function(json) {
+            self.dataLoaded(json);
+        };
+        return dataLoadedWrapper;
+    }
+
+    getWrongUrlWrapper() {
+        const self = this;
+        const wrongUrlWrapper = function(error) {
+            self.wrongUrl(error);
+        };
+        return wrongUrlWrapper;
     }
 
 }
