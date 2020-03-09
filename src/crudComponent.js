@@ -22,6 +22,7 @@
 
 import { createElement, resetElementHTML } from "./utils.js";
 import CrudTable from "./crudTable.js";
+import CrudRequest from "./crudRequest.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -30,6 +31,8 @@ import CrudTable from "./crudTable.js";
  */
 
 class CrudComponent extends HTMLElement {
+
+    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
 
     constructor() {
         super();
@@ -80,6 +83,7 @@ class CrudComponent extends HTMLElement {
 
         if(settingsOk) {
             this.setAttr("data", null);
+            this.setAttr("request", new CrudRequest(this.getUrl(), this.getAddMessageWrapper()));
             this.setAttr("table", new CrudTable(this));
             if(this.isEditable()) {
                 const self = this;
@@ -94,39 +98,33 @@ class CrudComponent extends HTMLElement {
 
     }
 
-    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
-
     // Requests
 
     load() {
         this.displayLoading();
-        fetch(this.getUrl())
-        .then(response => {
-            return response.json();
-        })
-        .then(json => {
-            this.parseData(json);
-            this.displayTable();
-        })
-        .catch(err => {
-            this.displayError("Error", "An error occured while trying to fetch resource. See : "+err);
-        });
+        this.getAttr("request").get(this.getDataLoadedWrapper(), this.getWrongUrlWrapper());
     }
 
-    parseData(data) {
-        for(const line of data.values) {
-            line.status = "S";
-        }
-        this.setAttr("data", data);
+    wrongUrl(error) {
+        this.displayError("Error", "An error occured while trying to fetch resource. See : " + error);
+    }
+
+    dataLoaded(json) {
+        this.setAttr("data", json);
+        this.displayTable();
     }
 
     save() {
         if(this.getData()) {
-            console.log("SAVE", this.getData());
+            this.getAttr("request").send(this.getValues());
         }
     }
 
     // Displays
+
+    addMessage(typeM, titleM, textM) {
+        console.log("TYPE:", typeM, "TITLE:", titleM, "TEXT:", textM);
+    }
 
     resetDisplay() {
         resetElementHTML(this);
@@ -187,6 +185,10 @@ class CrudComponent extends HTMLElement {
         return this.getAttr("data");
     }
 
+    getValues() {
+        return this.getData().values;
+    }
+
     getUrl() {
         return this.getAttr("url");
     }
@@ -198,6 +200,32 @@ class CrudComponent extends HTMLElement {
     setChild(child) {
         this.resetDisplay();
         this.appendChild(child);
+    }
+
+    // Function wrappers
+
+    getAddMessageWrapper() {
+        const self = this;
+        const addMessageFuncWrapper = function(typeM, titleM, textM) {
+            self.addMessage(typeM, titleM, textM);
+        };
+        return addMessageFuncWrapper;
+    }
+
+    getDataLoadedWrapper() {
+        const self = this;
+        const dataLoadedWrapper = function(json) {
+            self.dataLoaded(json);
+        };
+        return dataLoadedWrapper;
+    }
+
+    getWrongUrlWrapper() {
+        const self = this;
+        const wrongUrlWrapper = function(error) {
+            self.wrongUrl(error);
+        };
+        return wrongUrlWrapper;
     }
 
 }
