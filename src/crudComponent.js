@@ -58,6 +58,7 @@ class CrudComponent extends HTMLElement {
             </div>
             `)
         );
+        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;top:10px;"></div>`));
 
         if(url === null && settingsOk) {
             settingsOk = false;
@@ -85,6 +86,7 @@ class CrudComponent extends HTMLElement {
             this.setAttr("data", null);
             this.setAttr("request", new CrudRequest(this.getUrl(), this.getAddMessageWrapper()));
             this.setAttr("table", new CrudTable(this));
+            document.body.appendChild(this.getAttr("messagesElement"));
             if(this.isEditable()) {
                 const self = this;
                 this.getAttr("saveButton").onclick = function() {
@@ -123,7 +125,12 @@ class CrudComponent extends HTMLElement {
     // Displays
 
     addMessage(typeM, titleM, textM) {
-        console.log("TYPE:", typeM, "TITLE:", titleM, "TEXT:", textM);
+        this.getAttr("messagesElement").appendChild(createElement(`
+            <div style="box-shadow:2px 2px 2px black;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
+              <strong>`+titleM+`:</strong> `+textM+`
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+        `));
     }
 
     resetDisplay() {
