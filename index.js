@@ -2,10 +2,13 @@ var express = require('express');
 var path = require('path');
 var fs = require('fs');
 var marked = require('marked');
+var cors = require('cors');
 
 var app = express();
 
 app.set('view engine', 'ejs');
+app.use(express.json());
+app.use(cors());
 app.use("/static", express.static(path.join(__dirname + '/static/')));
 app.use("/dependencies", express.static(path.join(__dirname + '/static/node_modules/')));
 app.use("/css", express.static(path.join(__dirname + '/static/css/')));
@@ -64,6 +67,34 @@ app.get('/demo/data', function(req, res) {
     res.json(json);
 });
 
+app.post('/demo/data', function(req, res) {
+    for(var i = 0; i < req.body.actions.length; i++) {
+        var j;
+        var request = req.body.actions[i].request;
+        switch(request) {
+            case "NEW":
+                req.body.actions[i].result = [];
+                for (j = 0; j < req.body.actions[i].new_values.length; j++) {
+                    req.body.actions[i].result.push(['OK']);
+                }
+                break;
+            case "MODIFIED":
+                req.body.actions[i].result = [];
+                for (j = 0; j < req.body.actions[i].new_values.length; j++) {
+                    req.body.actions[i].result.push(['OK']);
+                }
+                break;
+            case "DELETED":
+                req.body.actions[i].result = [];
+                for (j = 0; j < req.body.actions[i].old_values.length; j++) {
+                    req.body.actions[i].result.push(['OK']);
+                }
+                break;
+        }
+    }
+    res.json(req.body);
+});
+
 app.get('/docs', function(req, res) {
     res.send('Docs');
 });
@@ -75,6 +106,7 @@ console.log('Running index.js at ' + baseUrl + '/');
 console.log("Urls: ");
 for (var i = 0; i < app._router.stack.length; i++) {
     if(app._router.stack[i].route !== undefined) {
-        console.log("> "+baseUrl+app._router.stack[i].route.path);
+        var typeMeth = (app._router.stack[i].route.methods.post) ? "POST" : "GET";
+        console.log("> HTTP "+typeMeth+": "+baseUrl+app._router.stack[i].route.path);
     }
 }
