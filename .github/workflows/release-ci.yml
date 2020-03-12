@@ -12,4 +12,4 @@ jobs:
               with:
                   PACKAGE_MANAGER: npm
                   BUILD_COMMAND_TARGET: build:dist
-                  CLEAN_TARGETS: *.lock, *-lock.json, *-error.log, node_modules/
+                  CLEAN_TARGETS: node_modules, *.lock, *-lock.json, *-error.log
