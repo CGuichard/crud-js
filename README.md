@@ -18,8 +18,8 @@
 [![MIT License](https://img.shields.io/github/license/CGuichard/crud-js?color=success&style=flat-square)](https://github.com/CGuichard/crud-js/blob/master/LICENSE)
 
 [Pull Request](https://github.com/CGuichard/crud-js/pulls) ·
-[Report Bug](https://github.com/CGuichard/crud-js/issues) ·
-[Request Feature](https://github.com/CGuichard/crud-js/issues)
+[Report Bug](https://github.com/CGuichard/crud-js/issues/new?template=bug_report.md) ·
+[Request Feature](https://github.com/CGuichard/crud-js/issues/new?template=feature_request.md)
 
 </div>
 

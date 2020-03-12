@@ -24,7 +24,7 @@ The following is a set of guidelines for contributing. These are mostly guidelin
 
 ### <a name="reporting-issues-features"></a> Reporting issues & features requests
 
-If you notice any bugs in the app, see some code that can be improved, or have features you would like to be added, please create a [bug report](https://github.com/CGuichard/crud-js/issues/) or a [feature request](https://github.com/CGuichard/crud-js/issues/)!
+If you notice any bugs in the app, see some code that can be improved, or have features you would like to be added, please create a [bug report](https://github.com/CGuichard/crud-js/issues/new?template=bug_report.md) or a [feature request](https://github.com/CGuichard/crud-js/issues/new?template=feature_request.md)!
 
 ### <a name="working-issues"></a> Working on issues
 
