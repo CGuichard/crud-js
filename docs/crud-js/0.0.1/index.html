@@ -137,6 +137,7 @@
 </li>
 <li><a href="#usage">Usage</a></li>
 <li><a href="#contributing">Contributing</a></li>
+<li><a href="#workflows-ci">Workflows/CI</a></li>
 <li><a href="#versioning">Versioning</a></li>
 <li><a href="#authors">Authors</a></li>
 <li><a href="#license">License</a></li>
@@ -285,21 +286,70 @@
     ]
 }
 </code></pre>
-<p>As you can see, the update request is in three-part. The old_values field always contains data at the state they were received by the CRUD or their state at the last successful save. Details:</p>
+<p>As you can see, the update request is in three-part. The <em>old_values</em> field always contains data at the state they were received by the CRUD or their state at the last successful save. Details:</p>
 <ul>
 <li>
-<p><strong>NEW</strong>: New values are stored in the new_values field.</p>
+<p><strong>NEW</strong>: New values are stored in the <em>new_values</em> field.</p>
 </li>
 <li>
-<p><strong>MODIFIED</strong>: Old values are in the old_values field and new values in the new_values one.</p>
+<p><strong>MODIFIED</strong>: Old values are in the <em>old_values</em> field and new values in the <em>new_values</em> one.</p>
 </li>
 <li>
-<p><strong>DELETED</strong>: Values deleted are in the old_values field.</p>
+<p><strong>DELETED</strong>: Values deleted are in the <em>old_values</em> field.</p>
 </li>
+</ul>
+<p>The order of the array makes it so for the <strong>MODIFIED</strong> case an element of index <em>i</em> in <em>old_values</em> is at the identical index in <em>new_values</em>, such as <em>old_values[i]</em> is the former state of the data at <em>new_values[i]</em>.</p>
+<p>This operation expects a specific response, whose content is the one sent, but with an additional field:</p>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;actions&quot;: [
+        {
+          &quot;request&quot;: &quot;NEW&quot;,
+          &quot;new_values&quot;: [...],
+          &quot;result&quot;: [...]
+        },
+        {
+          &quot;request&quot;: &quot;MODIFIED&quot;,
+          &quot;old_values&quot;: [...],
+          &quot;new_values&quot;: [...],
+          &quot;result&quot;: [...]
+        },
+        {
+          &quot;request&quot;: &quot;DELETED&quot;,
+          &quot;old_values&quot;: [...],
+          &quot;result&quot;: [...]
+        }
+    ]
+}
+</code></pre>
+<p>In each action, a field <em>result</em> appeared just like previously, each item of the <em>result</em> field described for each item in <em>old_values</em> (or/and <em>new_values</em>) at the same index the response of the back-end. There are two possible values for the <em>result</em> items:</p>
+<ul>
+<li><code>[&quot;OK&quot;]</code>: If the operation succeeded.</li>
+<li><code>[&quot;ERROR&quot;, errorText]</code>: If the operation failed. The variable <code>errorText</code> is a string detailing the error.</li>
 </ul>
 <h2><a name="contributing"></a> Contributing</h2>
 <p>If you want to contribute to this project or understand how it works, please check <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
 <p>Any contributions you make are <strong>greatly appreciated</strong>.</p>
+<h2><a name="workflows-ci"></a> Workflows/CI</h2>
+<p>We're currently working to adopt continuous integration with <a href="https://github.com/features/actions">GitHub Actions</a>. It is in development and not ready at the moment. We are working on integrating the following workflows:</p>
+<ul>
+<li>
+<p><strong>Release CI</strong>: Deploys the release on a specific branch (example: &quot;release/v1&quot;) on tag push.</p>
+</li>
+<li>
+<p><strong>Issue CI</strong>: Creates the corresponding branch on issue creation.</p>
+</li>
+<li>
+<p><strong>Build CI</strong>:</p>
+<ul>
+<li>
+<p>master[on push]: build dist &amp; push it on branch named &quot;lastest-build&quot; ; build docs &amp; push it on branch named &quot;gh-pages&quot;.</p>
+</li>
+<li>
+<p>dev[on push]: build dist &amp; save as artifact named &quot;dist&quot;.</p>
+</li>
+</ul>
+</li>
+</ul>
 <h2><a name="versioning"></a> Versioning</h2>
 <p><a href="(https://git-scm.com/)">Git</a> is the VCS (Version Control System) used for versioning this project. The project is hosted on <a href="https://github.com/">GitHub</a>.</p>
 <h2><a name="authors"></a> Authors</h2>
