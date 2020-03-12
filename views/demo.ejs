@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>CrudJS Demo</title>
+        <meta name="description" content="CrudJS demo page.">
+        <link rel="icon" href="/images/crud-js-icon.ico" />
+        <link rel="stylesheet" href="/dependencies/@fortawesome/fontawesome-free/css/all.min.css">
+        <link rel="stylesheet" href="/dependencies/bootstrap-material-design/dist/css/bootstrap-material-design.min.css">
+        <link rel="stylesheet" href="/css/crud-js.css">
+    </head>
+    <body class="container bg-info">
+
+        <div id="demo-header" class="card text-center mt-4 mb-4">
+            <div class="card-body">
+                <a href="/"><img style="max-width:80%;" src="/images/crud-js.png" alt=""></a>
+            </div>
+        </div>
+
+        <div id="demo-content" class="card">
+          <div class="card-body p-0">
+
+            <ul class="nav nav-tabs tab-header" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#demo-editable" role="tab">Editable crud</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#demo-not-editable" role="tab">Read only crud</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#demo-error-editable" role="tab">Editable error</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#demo-error-false-url" role="tab">Url error</a>
+                </li>
+            </ul>
+            <div class="tab-content p-4">
+                <div class="tab-pane fade show active" id="demo-editable" role="tabpanel">
+
+                    <button id="save-btn-1" type="button" name="button" class="btn btn-raised btn-warning">SAVE</button>
+                    <crud-js url="/demo/data" save-button="save-btn-1" editable></crud-js>
+
+                </div>
+                <div class="tab-pane fade" id="demo-not-editable" role="tabpanel">
+
+                    <crud-js url="/demo/data"></crud-js>
+
+                </div>
+                <div class="tab-pane fade" id="demo-error-editable" role="tabpanel">
+
+                    <crud-js url="/demo/data" editable></crud-js>
+
+                </div>
+                <div class="tab-pane fade" id="demo-error-false-url" role="tabpanel">
+
+                    <crud-js url="/demo/urlnotexist"></crud-js>
+
+                </div>
+            </div>
+
+
+
+          </div>
+        </div>
+
+        <script src="/dependencies/jquery/dist/jquery.min.js" charset="utf-8"></script>
+        <script src="/dependencies/popper.js/dist/umd/popper.min.js" charset="utf-8"></script>
+        <script src="/dependencies/bootstrap-material-design/dist/js/bootstrap-material-design.min.js" charset="utf-8"></script>
+        <script>
+            $(document).ready(function() { $('body').bootstrapMaterialDesign(); });
+        </script>
+        <script src="/js/demo.js" charset="utf-8"></script>
+        <script src="/crudjs/index.js" type="module" charset="utf-8"></script>
+    </body>
+</html>
