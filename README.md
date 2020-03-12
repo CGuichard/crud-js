@@ -38,6 +38,7 @@
     - [Demo](#installation-demo)
 * [Usage](#usage)
 * [Contributing](#contributing)
+* [Workflows/CI](#workflows-ci)
 * [Versioning](#versioning)
 * [Authors](#authors)
 * [License](#license)
@@ -207,13 +208,44 @@ As you can see, the json is in two part. First it describ the columns of the res
     ]
 }
 ```
-As you can see, the update request is in three-part. The old_values field always contains data at the state they were received by the CRUD or their state at the last successful save. Details:
+As you can see, the update request is in three-part. The _old\_values_ field always contains data at the state they were received by the CRUD or their state at the last successful save. Details:
 
-  - **NEW**: New values are stored in the new_values field.
+  - **NEW**: New values are stored in the _new\_values_ field.
 
-  - **MODIFIED**: Old values are in the old_values field and new values in the new_values one.
+  - **MODIFIED**: Old values are in the _old\_values_ field and new values in the _new\_values_ one.
 
-  - **DELETED**: Values deleted are in the old_values field.
+  - **DELETED**: Values deleted are in the _old\_values_ field.
+
+The order of the array makes it so for the **MODIFIED** case an element of index _i_ in _old\_values_ is at the identical index in _new\_values_, such as _old\_values[i]_ is the former state of the data at _new\_values[i]_.
+
+This operation expects a specific response, whose content is the one sent, but with an additional field:
+```JSON
+{
+    "actions": [
+        {
+          "request": "NEW",
+          "new_values": [...],
+          "result": [...]
+        },
+        {
+          "request": "MODIFIED",
+          "old_values": [...],
+          "new_values": [...],
+          "result": [...]
+        },
+        {
+          "request": "DELETED",
+          "old_values": [...],
+          "result": [...]
+        }
+    ]
+}
+```
+
+In each action, a field _result_ appeared just like previously, each item of the _result_ field described for each item in _old\_values_ (or/and _new\_values_) at the same index the response of the back-end. There are two possible values for the _result_ items:
+
+- `["OK"]`: If the operation succeeded.
+- `["ERROR", errorText]`: If the operation failed. The variable `errorText` is a string detailing the error.
 
 
 
@@ -222,6 +254,22 @@ As you can see, the update request is in three-part. The old_values field always
 If you want to contribute to this project or understand how it works, please check [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Any contributions you make are **greatly appreciated**.
+
+
+
+## <a name="workflows-ci"></a> Workflows/CI
+
+We're currently working to adopt continuous integration with [GitHub Actions](https://github.com/features/actions). It is in development and not ready at the moment. We are working on integrating the following workflows:
+
+- **Release CI**: Deploys the release on a specific branch (example: "release/v1") on tag push.
+
+- **Issue CI**: Creates the corresponding branch on issue creation.
+
+- **Build CI**:
+
+  - master[on push]: build dist & push it on branch named "lastest-build" ; build docs & push it on branch named "gh-pages".
+
+  - dev[on push]: build dist & save as artifact named "dist".
 
 
 
