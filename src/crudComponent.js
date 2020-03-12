@@ -58,7 +58,7 @@ class CrudComponent extends HTMLElement {
             </div>
             `)
         );
-        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;top:10px;z-index:100;"></div>`));
+        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;bottom:10px;z-index:100;"></div>`));
 
         if(url === null && settingsOk) {
             settingsOk = false;
