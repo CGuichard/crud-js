@@ -138,13 +138,17 @@ class CrudRequest {
                 });
                 break;
             case "DELETED":
+                let valuesToDelete = [];
                 action.result.forEach( function(val,i){
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
                         self.noError = false;
                     } else {
-                        delete values[values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'))];
+                        valuesToDelete.push(values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&')));
                     }
+                });
+                valuesToDelete.forEach( function(val){
+                    values.splice(val,1);
                 });
                 break;
         }
