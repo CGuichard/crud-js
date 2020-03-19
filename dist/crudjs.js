@@ -610,7 +610,7 @@ CrudTable.ID = 0;
  * @file module to send and retrieve values for crudjs
  *
  * @author Kévin Delcourt
- * @version 0.0.1
+ * @version 0.0.2
  *
  */
 
@@ -746,14 +746,19 @@ class CrudRequest {
                 });
                 break;
             case "DELETED":
+                let valuesToDelete = [];
                 action.result.forEach( function(val,i){
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
                         self.noError = false;
                     } else {
-                        delete values[values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'))];
+                        const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));
+                        valuesToDelete.push(indexInValues);
                     }
                 });
+                for(let i = valuesToDelete.length - 1; i >= 0; --i) {
+                    values.splice(valuesToDelete[i], 1);
+                }
                 break;
         }
     }

@@ -122,7 +122,7 @@ node index.js
 
 ## <a name="usage"></a> Usage
 
-If you did the complete installation process to run the demo you can check it at http://localhost:5000/demo. To understand how to use CrudJS I highly recommend taking a look at the demo.
+If you did the complete installation process to run the demo you can check it at [/demo](/demo). To understand how to use CrudJS I highly recommend taking a look at the demo.
 
 To use CrudJS you will have to define a URL in your back-end server. The method HTTP GET on it will retrieve the data as a JSON in a specific format. All modifications saved in the CRUD will be sent to the same URL as HTTP POST request in another specific format.
 
