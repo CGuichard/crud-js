@@ -5,11 +5,11 @@ on:
             - 'v*'
 jobs:
     release:
-        name: Release GitHub Actions
+        name: Release Job
         runs-on: ubuntu-latest
         steps:
             - uses: technote-space/release-github-actions@v4
               with:
-                    PACKAGE_MANAGER: npm
-                    BUILD_COMMAND_TARGET: build:dist
-                    CLEAN_TARGETS: node_modules, .github, *.lock, *-lock.json, *-error.log
+                PACKAGE_MANAGER: npm
+                BUILD_COMMAND_TARGET: build:dist
+                CLEAN_TARGETS: node_modules, .github, *.lock, *-lock.json, *-error.log
