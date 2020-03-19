@@ -1,0 +1,26 @@
+name: Build CrudJS Dist
+on:
+    push:
+        branches:
+            - dev
+            - issue-*
+jobs:
+    build:
+        name: Build Dist Artifact Job
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            node-version: [12.x]
+        steps:
+            - uses: actions/checkout@v2
+            - name: Use Node.js
+              uses: actions/setup-node@v1
+              with:
+                node-version: ${{ matrix.node-version }}
+            - run: npm install
+            - run: npm run build:dist --if-present
+            - name: Archive production artifacts
+              uses: actions/upload-artifact@v1
+              with:
+                name: dist
+                path: dist
