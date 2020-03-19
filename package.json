@@ -1,6 +1,6 @@
 {
   "name": "crud-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Javascript front-end CRUD webcomponent",
   "main": "index.js",
   "repository": "https://github.com/CGuichard/crud-js.git",
@@ -25,7 +25,7 @@
   "scripts": {
     "start": "npm run start:back && npm run start:front",
     "start:back": "npm install",
-    "start:front": "cd static; npm install",
+    "start:front": "cd static && npm install",
     "build": "npm run build:dist && npm run build:docs",
     "build:dist": "rollup --config=.rollup.config.js",
     "build:docs": "jsdoc --configure .jsdoc.json --verbose",
