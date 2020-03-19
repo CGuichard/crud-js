@@ -2,7 +2,7 @@
  * @file module to send and retrieve values for crudjs
  *
  * @author Kévin Delcourt
- * @version 0.0.1
+ * @version 0.0.2
  *
  */
 
@@ -144,12 +144,13 @@ class CrudRequest {
                         self.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
                         self.noError = false;
                     } else {
-                        valuesToDelete.push(values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&')));
+                        const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));
+                        valuesToDelete.push(indexInValues);
                     }
                 });
-                valuesToDelete.forEach( function(val){
-                    values.splice(val,1);
-                });
+                for(let i = valuesToDelete.length - 1; i >= 0; --i) {
+                    values.splice(valuesToDelete[i], 1);
+                }
                 break;
         }
     }
