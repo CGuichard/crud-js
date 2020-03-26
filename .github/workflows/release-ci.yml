@@ -1,4 +1,4 @@
-name: Release CrudJS
+name: CrudJS Release
 on:
     push:
         tags:
@@ -10,6 +10,6 @@ jobs:
         steps:
             - uses: technote-space/release-github-actions@v4
               with:
-                PACKAGE_MANAGER: npm
-                BUILD_COMMAND_TARGET: build:dist
-                CLEAN_TARGETS: node_modules, .github, *.lock, *-lock.json, *-error.log
+                  PACKAGE_MANAGER: npm
+                  BUILD_COMMAND_TARGET: build:dist
+                  CLEAN_TARGETS: node_modules, .github, *.lock, *-lock.json, *-error.log
