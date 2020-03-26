@@ -1,0 +1,44 @@
+name: CrudJS Latest Build
+on:
+    push:
+        branches:
+            - master
+jobs:
+    release:
+        name: Deploy Latest Job
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            node-version: [12.x]
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+              with:
+                node-version: ${{ matrix.node-version }}
+            - run: npm install
+            - run: npm run build:dist --if-present
+            - name: Deploy latest dist build
+              uses: JamesIves/github-pages-deploy-action@releases/v3
+              with:
+                ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+                BRANCH: latest
+                FOLDER: .
+    deploy:
+        name: Deploy Docs Job
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            node-version: [12.x]
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+              with:
+                node-version: ${{ matrix.node-version }}
+            - run: npm install
+            - run: npm run build:docs --if-present
+            - name: Deploy to github pages
+              uses: JamesIves/github-pages-deploy-action@releases/v3
+              with:
+                ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+                BRANCH: gh-pages
+                FOLDER: docs
