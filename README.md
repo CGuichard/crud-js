@@ -30,12 +30,12 @@
 * [About the Project](#about-the-project)
   * [Built With](#built-with)
 * [Getting Started](#getting-started)
-  * [Prerequisites](#prerequisites)
-    - [Usage](#prerequisites-usage)
-    - [Demo](#prerequisites-demo)
-  * [Installation](#installation)
-    - [Usage](#installation-usage)
-    - [Demo](#installation-demo)
+  * [For use](#for-use)
+    - [Prerequisites](#prerequisites-for-use)
+    - [Installation](#installation-for-use)
+  * [Demo](#demo)
+    - [Prerequisites](#prerequisites-demo)
+    - [Installation](#installation-demo)
 * [Usage](#usage)
 * [Contributing](#contributing)
 * [Workflows/CI](#workflows-ci)
@@ -47,9 +47,7 @@
 
 ## <a name="about-the-project"></a> About The Project
 
-Data editing is a very common feature in current software. Nowadays software is designed and used to replace the data entry which was done previously by spreadsheets.
-
-CrudJS offers a front-end data editing table as a replacement for such tools. Then, you must write the back-end following the specifications given in the [Usage](#usage) section.
+Data editing is a very common feature in current software. Nowadays software is designed and used to replace the data entry which was done previously by spreadsheets. CrudJS offers a front-end data editing table as a replacement for such tools. Then, you must write the back-end following the specifications given in the [Usage](#usage) section.
 
 ### <a name="built-with"></a> Built With
 
@@ -63,20 +61,79 @@ This point is **really important**, CrudJS is built to be used in web pages incl
 
 ## <a name="getting-started"></a> Getting Started
 
-CrudJS is delivered as a minified javascript file. The only thing you need to use it is the file **crudjs.min.js** which you can find in the **dist** folder.
+CrudJS is delivered as a minified javascript file. The only thing you need to use it is the file **crudjs.min.js** (or **crudjs.js** if you want the source file).
 
-You can clone this project locally to run index.js and check the demo. The following steps are there to show you how to do it.
+_Note: **crudjs.js** is neither minified nor babelified, browser compatibility is therefore not guaranteed._
 
-### <a name="prerequisites"></a> Prerequisites
+You can check the [For use](#for-use) section to get CrudJS and use it in your web page. You can also clone this project locally to run the demo right after completing the steps aimed for [demo usage](#demo).
 
-#### <a name="prerequisites-usage"></a> Usage
+### <a name="for-use"></a> For use
+
+#### <a name="prerequisites-for-use"></a> Prerequisites
 
 The dependencies specified in [Built With](#built-with) are necessary for the web page where you will use CrudJS. You can refer to **static/package.json** to know more about their version used in the demo.
 
-#### <a name="prerequisites-demo"></a> Demo
+#### <a name="installation-for-use"></a> Installation
+
+There are multiple ways to get CrudJS on your page.
+
+###### <a name="installation-for-use-local-file"></a> Local file
+
+- You can download it, by cloning the project:
+
+  1. Clone the project, or get the [zip](https://github.com/CGuichard/crud-js/archive/master.zip).
+  ```sh
+  git clone https://github.com/CGuichard/crud-js.git
+  ```
+
+  2. Meet the [prerequisites](#prerequisites-demo) of the demo.
+
+  3. Run:
+  ```sh
+  npm start && npm run build:dist
+  ```
+
+  4. Take **crudjs.min.js** (or **crudjs.js**) in **dist** folder.
+
+  5. Include it in your page:
+  ```html
+  <script src="/path/to/the/file/crudjs.min.js"></script>
+  ```
+
+- Download a release.
+
+  1. Download the [release](https://github.com/CGuichard/crud-js/releases) you want.
+
+  2. Take **crudjs.min.js** (or **crudjs.js**) in **dist** folder of the release.
+
+  3. Include it in your page:
+  ```html
+  <script src="/path/to/the/file/crudjs.min.js"></script>
+  ```
+
+###### <a name="installation-for-use-local-file"></a> CDN
+
+- **[Release]** add the following link and replace _:version_ with the version you want to use (example: 'v0', 'v0.0.1', etc... versions are [here](https://github.com/CGuichard/crud-js/tags)):
+  ```html
+  <script src="https://raw.githack.com/CGuichard/crud-js/:version/dist/crudjs.min.js"></script>
+  ```
+
+- **[Latest]**: add the following link to get the latest version built from master:
+  ```html
+  <script src="https://raw.githack.com/CGuichard/crud-js/latest/dist/crudjs.min.js"></script>
+  ```
+
+###### <a name="installation-for-use-local-file"></a> Experimental
+
+Option for **contributor** use.
+On the push for dev branch and issue-* branches an artifact is in the [actions](https://github.com/CGuichard/crud-js/actions) of the project with the action '**CrudJS Build Dist**'. You can retrieve the dist folder in the artifact section of the branch that you want.
+
+### <a name="demo"></a> Demo
+
+#### <a name="prerequisites-demo"></a> Prerequisites
 
 You'll need two things:
-* Node.js - Check [here](https://nodejs.org/en/download/package-manager/) how to install in command line. Download [here](https://nodejs.org/en/download/).
+* Node.js - Install in [command line](https://nodejs.org/en/download/package-manager/) or [download](https://nodejs.org/en/download/).
 
 * npm - installed automatically with Node.js. Upgrade:
 ```sh
@@ -85,25 +142,9 @@ npm install npm@latest -g
 
 Another article to install Node.js and npm [here](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
 
-### <a name="installation"></a> Installation
+#### <a name="installation-demo"></a> Installation
 
-#### <a name="installation-usage"></a> Usage
-
-1. Get **crudjs.min.js** in the clone of the project, or the [zip](https://github.com/CGuichard/crud-js/archive/master.zip).
-```sh
-git clone https://github.com/CGuichard/crud-js.git
-```
-
-2. Put it in your page as src of script tag.
-```html
-<script src="/path/to/the/file/crudjs.min.js"></script>
-```
-
-3. Done. You can now use CrudJS on your page.
-
-#### <a name="installation-demo"></a> Demo
-
-1. Clone the repository.
+1. Clone the repository, or get the [zip](https://github.com/CGuichard/crud-js/archive/master.zip).
 ```sh
 git clone https://github.com/CGuichard/crud-js.git
 ```
@@ -172,7 +213,7 @@ The formats of the requests (GET and POST) is as follow:
         }
     ],
     "values": [
-        ["Giovanni", 41, "Men", ["Monday", "Tuesday", "Wednesday"]],
+        ["Thăng Long", 21, "Men", ["Monday", "Tuesday", "Wednesday"]],
         ["Jeanne", 27, "Women", ["Thursday", "Friday"]],
         ["Super Cookie", 1, "Other", []]
     ]
@@ -185,25 +226,26 @@ As you can see, the json is in two part. First it describ the columns of the res
 {
     "actions": [
         {
-          "request": "NEW",
-          "new_values": [
-              ["Clément", 21, "Men", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]]
-          ]
+            "request": "NEW",
+            "new_values": [
+                ["Clément", 21, "Men", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]]
+            ]
         },
         {
-          "request": "MODIFIED",
-          "old_values": [
-              ["Super Cookie", 1, "Other", []]
-          ],
-          "new_values": [
-              ["Super Cookie 2", 2, "Other", []]
-          ]
+            "request": "MODIFIED",
+            "old_values": [
+                ["Super Cookie", 1, "Other", []]
+            ],
+            "new_values": [
+                ["Super Cookie 2", 2, "Other", []]
+            ]
         },
         {
-          "request": "DELETED",
-          "old_values": [
-              ["Jeanne", 27, "Women", ["Thursday", "Friday"]]
-          ]
+            "request": "DELETED",
+            "old_values": [
+                ["Jeanne", 27, "Women", ["Thursday", "Friday"]],
+                ["Thăng Long", 21, "Men", ["Monday", "Tuesday", "Wednesday"]]
+            ]
         }
     ]
 }
@@ -223,20 +265,36 @@ This operation expects a specific response, whose content is the one sent, but w
 {
     "actions": [
         {
-          "request": "NEW",
-          "new_values": [...],
-          "result": [...]
+            "request": "NEW",
+            "new_values": [
+                ["Clément", 21, "Men", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]]
+            ],
+            "result": [
+                ["OK"]
+            ]
         },
         {
-          "request": "MODIFIED",
-          "old_values": [...],
-          "new_values": [...],
-          "result": [...]
+            "request": "MODIFIED",
+            "old_values": [
+                ["Super Cookie", 1, "Other", []]
+            ],
+            "new_values": [
+                ["Super Cookie 2", 2, "Other", []]
+            ],
+            "result": [
+                ["OK"]
+            ]
         },
         {
-          "request": "DELETED",
-          "old_values": [...],
-          "result": [...]
+            "request": "DELETED",
+            "old_values": [
+                ["Jeanne", 27, "Women", ["Thursday", "Friday"]],
+                ["Thăng Long", 21, "Men", ["Monday", "Tuesday", "Wednesday"]]
+            ],
+            "result": [
+                ["OK"],
+                ["ERROR", "Could not delete Thăng Long. He's a good guy."]
+            ]
         }
     ]
 }
@@ -259,7 +317,7 @@ Any contributions you make are **greatly appreciated**.
 
 ## <a name="workflows-ci"></a> Workflows/CI
 
-We're currently working to adopt continuous integration with [GitHub Actions](https://github.com/features/actions). It is in development and not ready at the moment. We are working on integrating the following workflows:
+We're working to adopt continuous integration with [GitHub Actions](https://github.com/features/actions). We are currently using the following workflows:
 
 - **Release CI**: Deploys the release on a specific branch (example: "release/v1") on tag push.
 
@@ -267,7 +325,7 @@ We're currently working to adopt continuous integration with [GitHub Actions](ht
 
 - **Build CI**:
 
-  - master[on push]: build dist & push it on branch named "lastest-build" ; build docs & push it on branch named "gh-pages".
+  - master[on push]: build dist & push it on branch named "latest" ; build docs & push it on branch named "gh-pages".
 
   - dev[on push]: build dist & save as artifact named "dist".
 
