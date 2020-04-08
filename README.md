@@ -165,7 +165,7 @@ node index.js
 
 If you did the complete installation process to run the demo you can check it at [/demo](/demo). To understand how to use CrudJS I highly recommend taking a look at the demo.
 
-To use CrudJS you will have to define a URL in your back-end server. The method HTTP GET on it will retrieve the data as a JSON in a specific format. All modifications saved in the CRUD will be sent to the same URL as HTTP POST request in another specific format.
+### Default configuration
 
 The web component **crud-js** is simple to use on your page. You can use it in two ways:
 
@@ -176,10 +176,27 @@ The web component **crud-js** is simple to use on your page. You can use it in t
 
 * **Editable**: Display an editable table. Need both GET and POST methods.
 ```html
-<crud-js url="/data/url" save-button="my-save-btn" editable></crud-js>
+<crud-js url="/data/url" save-button="my-save-btn"></crud-js>
 ```
 
-The _url_ attribute defines the URL at which the data are retrieved and updated. For editable CRUD you need to precise _editable_ and create a save button with an id specified in the _save-button_ attribute of the **crud-js** component.
+The _url_ attribute defines the URL at which the data are retrieved and updated. For editable CRUD you need to create a save button with an id specified in the _save-button_ attribute of the **crud-js** component.
+
+To get it work checkout the back-end communication.
+
+### Languages
+
+It is possible to use another language. Supported languages are:
+- **en** - English
+- **fr** - French
+
+Add it with the attribute **lang**:
+```html
+<crud-js lang="fr" url="/data/url" save-button="my-save-btn"></crud-js>
+```
+
+### Back-end communication
+
+To use CrudJS you will have to define a URL in your back-end server. The method HTTP GET on it will retrieve the data as a JSON in a specific format. All modifications saved in the CRUD will be sent to the same URL as HTTP POST request in another specific format.
 
 The formats of the requests (GET and POST) is as follow:
 
@@ -188,25 +205,25 @@ The formats of the requests (GET and POST) is as follow:
 {
     "columns": [
         {
-            "name":"Name",
-            "type":"text",
+            "name": "Name",
+            "type": "text",
             "options": {}
         },
         {
-            "name":"Age",
-            "type":"int",
+            "name": "Age",
+            "type": "int",
             "options": {}
         },
         {
-            "name":"Gender",
-            "type":"select",
+            "name": "Gender",
+            "type": "select",
             "options": {
                 "values": ["Men", "Women", "Other"]
             }
         },
         {
-            "name":"Busy day",
-            "type":"select-chips",
+            "name": "Busy day",
+            "type": "select-chips",
             "options": {
                 "values": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
             }
@@ -305,6 +322,21 @@ In each action, a field _result_ appeared just like previously, each item of the
 - `["OK"]`: If the operation succeeded.
 - `["ERROR", errorText]`: If the operation failed. The variable `errorText` is a string detailing the error.
 
+### Add examples
+
+// TODO
+
+### Validators
+
+// TODO
+
+### Custom fields
+
+// TODO
+
+### CSRF token
+
+// TODO
 
 
 ## <a name="contributing"></a> Contributing

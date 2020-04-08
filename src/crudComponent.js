@@ -21,6 +21,7 @@
  */
 
 import { createElement, resetElementHTML } from "./utils.js";
+import { langExist, text, DEFAULT_LANG } from "./lang.js";
 import CrudTable from "./crudTable.js";
 import CrudRequest from "./crudRequest.js";
 
@@ -32,7 +33,7 @@ import CrudRequest from "./crudRequest.js";
 
 class CrudComponent extends HTMLElement {
 
-    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
+    static get observedAttributes() { return ['lang', 'url', 'save-button']; }
 
     constructor() {
         super();
@@ -44,47 +45,73 @@ class CrudComponent extends HTMLElement {
 
         let settingsOk = true;
 
+        const lang = this.getAttribute("lang");
         const url = this.getAttribute("url");
-        const editable = this.getAttribute("editable");
         const saveButtonId = this.getAttribute("save-button");
 
         this.resetDisplay();
 
-        this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
-        this.setAttr("errorElement", createElement(`
-            <div class="alert alert-warning" role="alert">
-                <strong><span class="crudjs-error-t">ERROR</span>:</strong>
-                <span class="crudjs-error-m">Unknown</span>
-            </div>
-            `)
-        );
-        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;bottom:10px;z-index:100;"></div>`));
-
-        if(url === null && settingsOk) {
-            settingsOk = false;
-        } else {
-            this.setAttr("url", url);
-        }
-
-        if(editable !== null && settingsOk) {
-            if(saveButtonId !== null) {
-                const saveButton = document.getElementById(saveButtonId);
-                if(saveButton !== null) {
-                    this.setAttr("editable", true);
-                    this.setAttr("saveButton", saveButton);
-                } else {
-                    settingsOk = false;
-                }
+        if(lang != null) {
+            const attrLang = lang.slice(0, 2);
+            if(langExist(attrLang)) {
+                this.setAttr("langOrigin", "ATTRIBUTE");
+                this.setAttr("lang", attrLang);
             } else {
                 settingsOk = false;
             }
         } else {
-            this.setAttr("editable", false);
+            if(document.documentElement.lang != null && document.documentElement.lang.length >= 2) {
+                const docLang = document.documentElement.lang.slice(0, 2);
+                if(langExist(docLang)) {
+                    this.setAttr("langOrigin", "PAGE");
+                    this.setAttr("lang", docLang);
+                } else {
+                    settingsOk = false;
+                }
+            } else if(window.navigator) {
+                const navLang = (window.navigator.language!=null&&window.navigator.language.length>=2)?window.navigator.language.slice(0,2):((window.navigator.userLanguage!=null&&window.navigator.userLanguage.length>=2)?window.navigator.userLanguage.slice(0,2):null);
+                if(navLang != null && langExist(navLang)) {
+                    this.setAttr("langOrigin", "NAVIGATOR");
+                    this.setAttr("lang", navLang);
+                } else {
+                    this.setAttr("langOrigin", "DEFAULT");
+                    this.setAttr("lang", DEFAULT_LANG);
+                }
+            } else {
+                this.setAttr("langOrigin", "DEFAULT");
+                this.setAttr("lang", DEFAULT_LANG);
+            }
         }
+
+        if(url != null && settingsOk) {
+            this.setAttr("url", url);
+        } else {
+            settingsOk = false;
+        }
+
+        if(saveButtonId != null && settingsOk) {
+            const saveButton = document.getElementById(saveButtonId);
+            if(saveButton != null) {
+                this.setAttr("saveButton", saveButton);
+            } else {
+                settingsOk = false;
+            }
+        }
+
+        this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
+        this.setAttr("errorElement", createElement(`
+            <div class="alert alert-warning" role="alert">
+                <strong><span class="crudjs-error-t">${this.text("basic.error").toUpperCase()}</span>:</strong>
+                <span class="crudjs-error-m">Unknown</span>
+            </div>
+            `)
+        );
+        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;bottom:10px;z-index:100;pointer-events:none"></div>`));
+
 
         if(settingsOk) {
             this.setAttr("data", null);
-            this.setAttr("request", new CrudRequest(this.getUrl(), this.getAddMessageWrapper()));
+            this.setAttr("request", new CrudRequest(this, this.getUrl(), this.getAddMessageWrapper()));
             this.setAttr("table", new CrudTable(this));
             document.body.appendChild(this.getAttr("messagesElement"));
             if(this.isEditable()) {
@@ -95,7 +122,7 @@ class CrudComponent extends HTMLElement {
             }
             this.load();
         } else {
-            this.displayError("Error", "Incorrect configuration. If you want to have an editable crud don't forget to give it a save-button.");
+            this.displayError(this.text("basic.error"), this.text("component.configurationError"));
         }
 
     }
@@ -108,7 +135,7 @@ class CrudComponent extends HTMLElement {
     }
 
     wrongUrl(error) {
-        this.displayError("Error", "An error occured while trying to fetch resource. See : " + error);
+        this.displayError(this.text("basic.error"), `${this.text("component.urlError")} ${error}`);
     }
 
     dataLoaded(json) {
@@ -124,12 +151,16 @@ class CrudComponent extends HTMLElement {
 
     // Displays
 
+    text(strRequest) {
+        return text(this.getLang(), strRequest);
+    }
+
     addMessage(typeM, titleM, textM, timeM) {
         if(timeM == undefined) {
             timeM = 60000;
         }
         const toast = createElement(`
-            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
+            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
               <strong>`+titleM+`:</strong> `+textM+`
               <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
@@ -205,12 +236,16 @@ class CrudComponent extends HTMLElement {
         return this.getData().values;
     }
 
+    getLang() {
+        return this.getAttr("lang");
+    }
+
     getUrl() {
         return this.getAttr("url");
     }
 
     isEditable() {
-        return this.getAttr("editable");
+        return this.getAttr("saveButton") != null;
     }
 
     setChild(child) {
@@ -222,8 +257,8 @@ class CrudComponent extends HTMLElement {
 
     getAddMessageWrapper() {
         const self = this;
-        const addMessageFuncWrapper = function(typeM, titleM, textM) {
-            self.addMessage(typeM, titleM, textM);
+        const addMessageFuncWrapper = function(typeM, titleM, textM, timeM) {
+            self.addMessage(typeM, titleM, textM, timeM);
         };
         return addMessageFuncWrapper;
     }

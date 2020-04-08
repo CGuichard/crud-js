@@ -1,6 +1,6 @@
 {
   "name": "crud-js",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Javascript front-end CRUD webcomponent",
   "main": "index.js",
   "repository": "https://github.com/CGuichard/crud-js.git",
