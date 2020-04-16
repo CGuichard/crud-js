@@ -596,6 +596,398 @@ class CrudFieldDecorator extends CrudField {
 }
 
 /**
+ * @file This file contains the IntCrudField object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+/**
+ * Class representing an integer field for the CRUD.
+ *
+ * @extends CrudField
+ */
+class IntCrudField extends CrudField {
+
+    /**
+     * Creates an IntCrudField.
+     *
+     * @constructor
+     * @param {number}        value      - The value of the field.
+     * @param {object}        columnDesc - The back-end description of the field column.
+     * @param {CrudComponent} crud       - The CrudComponent which contains the field.
+     */
+    constructor(value, columnDesc, crud) {
+        super(value, columnDesc, crud);
+    }
+
+    /**
+     * Gets the default value when actual value is undefined or null.
+     *
+     * @returns {int} Default value.
+     */
+    get defaultValue() {
+        return 0;
+    }
+
+    /**
+     * Gets the new value of the field after editing.
+     *
+     * @returns {int} New value.
+     */
+    get newValue() {
+        if(this.edit) {
+            return Number(this.element.getElementsByTagName('input')[0].value);
+        }
+        return this.value;
+    }
+
+    /**
+     * Builds the display view.
+     *
+     * @protected
+     */
+    _buildDisplayView() {
+        this.element.innerHTML = this.value;
+    }
+
+    /**
+     * Builds the edit view.
+     *
+     * @protected
+     */
+    _buildEditView() {
+        this.element.innerHTML = `<input type="number" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${this.value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:auto !importan;">`;
+    }
+
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @returns {boolean}
+     */
+    isValid() {
+        const newValue = this.newValue;
+        return newValue != null && Number.isInteger(newValue);
+    }
+
+}
+
+/**
+ * @file This file contains the TextCrudField object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+/**
+ * Class representing a text field for the CRUD.
+ *
+ * @extends CrudField
+ */
+class TextCrudField extends CrudField {
+
+    /**
+     * Creates a TextCrudField.
+     *
+     * @constructor
+     * @param {string}        value      - The value of the field.
+     * @param {object}        columnDesc - The back-end description of the field column.
+     * @param {CrudComponent} crud       - The CrudComponent which contains the field.
+     */
+    constructor(value, columnDesc, crud) {
+        super(value, columnDesc, crud);
+    }
+
+    /**
+     * Gets the default value when actual value is undefined or null.
+     *
+     * @returns {string} Default value.
+     */
+    get defaultValue() {
+        return "";
+    }
+
+    /**
+     * Gets the new value of the field after editing.
+     *
+     * @returns {string} New value.
+     */
+    get newValue() {
+        if(this.edit) {
+            return this.element.getElementsByTagName('input')[0].value;
+        }
+        return this.value;
+    }
+
+    /**
+     * Builds the display view.
+     *
+     * @protected
+     */
+    _buildDisplayView() {
+        this.element.innerHTML = this.value;
+    }
+
+    /**
+     * Builds the edit view.
+     *
+     * @protected
+     */
+    _buildEditView() {
+        this.element.innerHTML = `<input type="text" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${this.value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0) !important;width:auto !important;">`;
+    }
+
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @returns {boolean}
+     */
+    isValid() {
+        const newValue = this.newValue;
+        return newValue != null && typeof newValue === "string";
+    }
+
+}
+
+/**
+ * @file This file contains the SelectCrudField object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+ /**
+  * Class representing a select field for the CRUD.
+  *
+  * @extends CrudField
+  */
+class SelectCrudField extends CrudField {
+
+    /**
+     * Creates a SelectCrudField.
+     *
+     * @constructor
+     * @param {(Array.<number>|Array.<string>)} value      - The value of the field.
+     * @param {object}                          columnDesc - The back-end description
+     *                                                       of the field column.
+     * @param {CrudComponent}                   crud       - The CrudComponent which contains
+     *                                                       the field.
+     */
+    constructor(value, columnDesc, crud) {
+        super(value, columnDesc, crud);
+    }
+
+    /**
+     * Gets the default value when actual value is undefined or null.
+     *
+     * @returns {(Array.<number>|Array.<string>)} Default value.
+     */
+    get defaultValue() {
+        return [];
+    }
+
+    /**
+     * Gets the new value of the field after editing.
+     *
+     * @returns {(Array.<number>|Array.<string>)} New value.
+     */
+    get newValue() {
+        if(this.edit) {
+            return this.element.getElementsByTagName('select')[0].value;
+        }
+        return this.value;
+    }
+
+    /**
+     * Builds the display view.
+     *
+     * @protected
+     */
+    _buildDisplayView() {
+        this.element.innerHTML = this.value;
+    }
+
+    /**
+     * Builds the edit view.
+     *
+     * @protected
+     */
+    _buildEditView() {
+        const fieldValue = this.value;
+        let selectHTML = "<select class=\"custom-select\">";
+        for(const choice of this.columnDesc.options.values) {
+            selectHTML = selectHTML.concat(`<option value="${choice}" ${((choice===fieldValue)?"selected":"")}>${choice}</option>`);
+        }
+        selectHTML = selectHTML.concat("</select>");
+        this.element.innerHTML = selectHTML;
+    }
+
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @returns {boolean}
+     */
+    isValid() {
+        return this.newValue != null;
+    }
+
+}
+
+/**
+ * @file This file contains the SelectChipsCrudField object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+ /**
+  * Class representing a select field with chips for the CRUD.
+  *
+  * @extends CrudField
+  */
+class SelectChipsCrudField extends CrudField {
+
+    /**
+     * Returns chips HTMLElement.
+     *
+     * @static
+     * @param   {(number|string)} value - The chips value.
+     * @returns {HTMLElement}
+     */
+    static createSelectChips(value) {
+        const chips = createElement(`<span style="font-size:0.9rem;" class="crudjs-chips badge badge-pill badge-secondary mt-1 mr-1 pb-2 pt-2">${value}<span class="crudjs-remove-chips-btn bg-light rounded-circle pl-1 pr-1 text-secondary ml-1" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i></span></span>`);
+        const removeChipsFunction = function() {
+            const chips = this.parentNode;
+            const newOption = document.createElement("option");
+            newOption.value = chips.textContent;
+            newOption.textContent = newOption.value;
+            chips.parentNode.getElementsByTagName('select')[0].appendChild(newOption);
+            chips.remove();
+        };
+        chips.getElementsByClassName('crudjs-remove-chips-btn')[0].onclick = removeChipsFunction;
+        return chips;
+    }
+
+    /**
+     * Creates a SelectChipsCrudField.
+     *
+     * @constructor
+     * @param {(Array.<number>|Array.<string>)} value      - The value of the field.
+     * @param {object}                          columnDesc - The back-end description
+     *                                                       of the field column.
+     * @param {CrudComponent}                   crud       - The CrudComponent which contains
+     *                                                       the field.
+     */
+    constructor(value, columnDesc, crud) {
+        super(value, columnDesc, crud);
+    }
+
+    /**
+     * Gets the default value when actual value is undefined or null.
+     *
+     * @returns {(Array.<number>|Array.<string>)} Default value.
+     */
+    get defaultValue() {
+        return [];
+    }
+
+    /**
+     * Gets the new value of the field after editing.
+     *
+     * @returns {(Array.<number>|Array.<string>)} New value.
+     */
+    get newValue() {
+        if(this.edit) {
+            const valuesArray = [];
+            for(const value of this.element.getElementsByClassName("crudjs-chips")) {
+                valuesArray.push(value.textContent);
+            }
+            return valuesArray;
+        }
+        return this.value;
+    }
+
+    /**
+     * Builds the display view.
+     *
+     * @protected
+     */
+    _buildDisplayView() {
+        for (const val of this.value) {
+            this.element.innerHTML = this.element.innerHTML.concat(`<span style="font-size:0.9rem;" class="badge badge-pill badge-secondary mt-1 mr-1 pb-2 pt-2">${val}</span>`);
+        }
+    }
+
+    /**
+     * Builds the edit view.
+     *
+     * @protected
+     */
+    _buildEditView() {
+        const fieldValue = this.value;
+        const options = this.columnDesc.options.values.filter(x => !(fieldValue.includes(x)));
+        // Create select
+        const selectChips = document.createElement("select");
+        selectChips.setAttribute("style", "width:auto !important");
+        selectChips.setAttribute("class", "custom-select mr-2");
+        selectChips.appendChild(createElement(`<option>${this.crud.text("field.selectChips.select")}</option>`));
+        for(const choice of options) {
+            selectChips.appendChild(createElement(`<option value="${choice}">${choice}</option>`));
+        }
+        selectChips.onchange = function() {
+            const chips = SelectChipsCrudField.createSelectChips(this.value);
+            this.parentNode.appendChild(chips);
+            this.options[this.selectedIndex].remove();
+            this.selectedIndex = 0;
+        };
+        this.element.appendChild(selectChips);
+        // Create chips
+        for (const value of fieldValue) {
+            this.element.appendChild(SelectChipsCrudField.createSelectChips(value));
+        }
+    }
+
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @returns {boolean}
+     */
+    isValid() {
+        const newValue = this.newValue;
+        return newValue != null && Array.isArray(newValue);
+    }
+
+}
+
+/**
  * @file This file contains the CrudFieldFactory object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
@@ -632,12 +1024,17 @@ class CrudFieldFactory {
      */
     constructor() {
         /**
-         * Dictionary for class cache.
+         * Dictionary for default classes.
          *
          * @private
          * @type {object}
          */
-        this.__cls = {};
+        this.__cls = {
+            "int": IntCrudField,
+            "text": TextCrudField,
+            "select": SelectCrudField,
+            "select-chips": SelectChipsCrudField,
+        };
         /**
          * Dictionary for custom classes.
          *
@@ -655,53 +1052,6 @@ class CrudFieldFactory {
     }
 
     /**
-     * Gets the name of the CrudField class from its back-end name.
-     *
-     * This function gets a CrudField implentation from its back-end name.
-     * Examples : - int = IntCrudField
-     *            - select-chips = SelectChipsCrudField
-     *
-     * @private
-     * @param   {string} name - The name of the field.
-     * @returns {string} The name of the class.
-     */
-    __getClassName(name) {
-        const parts = name.split("-");
-        for(let i = 0; i < parts.length; i++) {
-            parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1);
-        }
-        return parts.join('') + "CrudField";
-    }
-
-    /**
-     * Gets an implemented CrudField class from its class name.
-     *
-     * @private
-     * @param   {string}   name - The name of the class.
-     * @returns {function} The class.
-     */
-    __getClass(name) {
-        const className = this.__getClassName(name);
-        if(!this.__cls[name]) {
-            if(className.match(/^[a-zA-Z0-9_]+$/)) {
-                try {
-                    /* jshint ignore:start */
-                    this.__cls[name] = eval(className);
-                    /* jshint ignore:end */
-                } catch (e) {
-                    if(e.name === "ReferenceError") {
-                        return undefined;
-                    }
-                    console.log(e);
-                }
-            } else {
-                throw new Error(`Unexpected name: ${className}`);
-            }
-        }
-        return this.__cls[name];
-    }
-
-    /**
      * Creates a CrudField.
      *
      * @param   {string}        name       - The field name.
@@ -711,12 +1061,15 @@ class CrudFieldFactory {
      * @returns {object}
      */
     create(name, value, columnDesc, crud) {
-        if(this.__customCls[name]) {
+        if(this.__customCls[name] != null) {
             const _customField = this.__customCls[name];
             return new CrudFieldDecorator(new _customField(value, columnDesc, crud));
+        } else if(this.__cls[name] != null) {
+            const _field = this.__cls[name];
+            return new _field(value, columnDesc, crud);
+        } else {
+            throw new Error(`Unknown type: ${name}`);
         }
-        const _field = this.__getClass(name);
-        return (_field == null) ? _field : new _field(value, columnDesc, crud);
     }
 
 }
