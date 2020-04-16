@@ -35,10 +35,423 @@ function isHidden(element) {
 }
 
 /**
- * @file This file contains the CrudField object.
+ * @file This file contains CrudJS languages.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
  * @version 0.0.1
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Options JSHint
+ * ------------------------------------------------------------------------
+ */
+
+/* jshint esversion: 6 */
+
+/**
+ * ------------------------------------------------------------------------
+ * Constants
+ * ------------------------------------------------------------------------
+ */
+
+const LANGUAGES = {
+    en: {
+        basic: {
+            yes: "Yes",
+            no: "No",
+            ok: "OK",
+            cancel: "Cancel",
+            error: "Error",
+            warning: "Warning"
+        },
+        component: {
+            configurationError: "Incorrect configuration. Please read the README of the project to correct your configuration.",
+            urlError: "An error occured while trying to fetch resource. See:"
+        },
+        request: {
+            badResponse: "Bad response",
+            okResponse: "Saving done",
+            addImpossible: "Could not add the line:",
+            modifyImpossible: "Could not modify the line:",
+            deleteImpossible: "Could not delete the line:"
+        },
+        table: {
+            column: {
+                actionName: "Action(s)"
+            },
+            modal: {
+                delete: {
+                    title: "Warning!",
+                    message: "Are you sure you want to delete this line?"
+                }
+            }
+        },
+        line: {
+            btn: {
+                edit: "Edit",
+                delete: "Delete",
+                validate: "Validate",
+                cancel: "Cancel",
+                add: "Add",
+                addCancel: "Reset",
+            },
+            messages: {
+                invalidColumn: "Invalid column:"
+            }
+        },
+        field: {
+            selectChips: {
+                select: "Select..."
+            }
+        }
+    },
+    fr: {
+        basic: {
+            yes: "Oui",
+            no: "Non",
+            ok: "OK",
+            cancel: "Annuler",
+            error: "Erreur",
+            warning: "Attention"
+        },
+        component: {
+            configurationError: "Configuration incorrect. Veuillez lire le README du projet pour corriger votre configuration.",
+            urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez:"
+        },
+        request: {
+            badResponse: "Mauvaise réponse",
+            okResponse: "Sauvegarde effectuée",
+            addImpossible: "Impossible d'ajouter la ligne :",
+            modifyImpossible: "Impossible de modifier la ligne :",
+            deleteImpossible: "Impossible de supprimer la ligne :"
+        },
+        table: {
+            column: {
+                actionName: "Action(s)"
+            },
+            modal: {
+                delete: {
+                    title: "Attention!",
+                    message: "Voulez-vous vraiment supprimer cette ligne ?"
+                }
+            }
+        },
+        line: {
+            btn: {
+                edit: "Editer",
+                delete: "Supprimer",
+                validate: "Valider",
+                cancel: "Annuler",
+                add: "Ajouter",
+                addCancel: "Réinitialiser",
+            },
+            messages: {
+                invalidColumn: "Colonne invalide :"
+            }
+        },
+        field: {
+            selectChips: {
+                select: "Sélectionner..."
+            }
+        }
+    }
+};
+
+const DEFAULT_LANG = "en";
+
+/**
+ * ------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------
+ */
+
+ function langExist(lang) {
+     return lang != null && LANGUAGES[lang] != null;
+ }
+
+ function text(lang, strRequest) {
+     if(langExist(lang)) {
+         const request = strRequest.split(".");
+         if(strRequest != null && strRequest.length < 1) {
+             throw new Error("Invalid text request.");
+         }
+         let value = LANGUAGES[lang];
+         for(const elem of request) {
+             value = value[elem];
+             if(value == null) {
+                 throw new Error("Invalid text request.");
+             }
+         }
+         return value;
+     }
+     throw new Error("Language not found");
+ }
+
+/**
+ * @file This file contains the CrudField object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ * @since 0.0.1
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Constants
+ * ------------------------------------------------------------------------
+ */
+
+/**
+ * CrudField possible states enumeration.
+ *
+ * @constant
+ * @type {object}
+ * @property {number} VIEW - CrudField view value.
+ * @property {number} EDIT - CrudField edit value.
+ */
+const FIELD_STATE = Object.freeze({ VIEW: 1, EDIT: 2 });
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+/**
+ * Class representing a field in a line of the CRUD.
+ */
+class CrudField {
+
+    /**
+     * Returns HTMLElement root for the CrudField.
+     *
+     * @static
+     * @returns {HTMLElement}
+     */
+    static createElement() {
+        const element = document.createElement("td");
+        return element;
+    }
+
+    /**
+     * Creates a CrudField.
+     *
+     * The Constructor of CrudField. it cannot be invoked directly
+     * because CrudField is considered abstract.
+     *
+     * @constructor
+     * @param {*}             value      - The value of the field.
+     * @param {object}        columnDesc - The back-end description of the field column.
+     * @param {CrudComponent} crud       - The CrudComponent which contains the field.
+     */
+    constructor(value, columnDesc, crud) {
+        /* Ensure non-instantiation. */
+        if (new.target === CrudField) {
+            throw new TypeError("Cannot construct CrudField instances directly");
+        }
+        /**
+         * The CrudField value member.
+         *
+         * @protected
+         * @type {*}
+         */
+        this._value = value;
+        /**
+         * The CrudField value member.
+         *
+         * @protected
+         * @type {object}
+         * @property {string}         name             - The column name.
+         * @property {string}         type             - The column type.
+         * @property {object}         [options]        - The column options.
+         * @property {Array.<object>} [options.values] - The column possible values.
+         */
+        this._columnDesc = columnDesc;
+        /**
+         * The CrudComponent which contains the field.
+         *
+         * @protected
+         * @type {CrudComponent}
+         */
+        this._crud = crud;
+        /**
+         * The CrudField value member.
+         *
+         * @protected
+         * @type {number}
+         */
+        this._state = FIELD_STATE.VIEW;
+        /**
+         * The CrudField value member.
+         *
+         * @protected
+         * @type {HTMLElement}
+         */
+        this._element = CrudField.createElement();
+    }
+
+    /* Getters & Setters */
+
+    /**
+     * Accessor of CrudField element.
+     *
+     * @readonly
+     */
+    get element() {
+        return this._element;
+    }
+
+    /**
+     * Accessor of CrudField column description.
+     *
+     * @readonly
+     */
+    get columnDesc() {
+        return this._columnDesc;
+    }
+
+    /**
+     * Accessor of CrudField crud.
+     *
+     * @readonly
+     */
+    get crud() {
+        return this._crud;
+    }
+
+    /** Accessor of CrudField state */
+    get state() {
+        return this._state;
+    }
+
+    /** Accessor of CrudField value. */
+    get value() {
+        return (this._value == null) ? this.defaultValue : this._value;
+    }
+
+    /**
+     * True if field is under edition, else False.
+     *
+     * @returns {boolean}
+     */
+    get edit() {
+        return this.state === FIELD_STATE.EDIT;
+    }
+
+    set state(val) {
+        this._state = val;
+    }
+
+    set value(val) {
+        this._value = val;
+    }
+
+    /* Show methods */
+
+    /**
+     * Updates the element.
+     *
+     * The method that updates the element. Resets the HTML
+     * element and creates the view corresponding to the
+     * current state of the instance.
+     */
+    update() {
+        resetElementHTML(this.element);
+        switch(this.state) {
+            case FIELD_STATE.VIEW:
+                this._buildDisplayView();
+                break;
+            case FIELD_STATE.EDIT:
+                this._buildEditView();
+                break;
+        }
+    }
+
+    /** Shows the display view of the element. */
+    showDisplayView() {
+        this.state = FIELD_STATE.VIEW;
+        this.update();
+    }
+
+    /** Shows the editable view of the element. */
+    showEditView() {
+        this.state = FIELD_STATE.EDIT;
+        this.update();
+    }
+
+    /* Validation */
+
+    /**
+     * Validates edition by saving newValue in value. Returns value.
+     * @returns {*}
+     */
+    validate() {
+        this.value = this.newValue;
+        return this.value;
+    }
+
+    /* Abstract methods */
+
+    /**
+     * Returns the default value when actual value is undefined or null.
+     *
+     * @abstract
+     * @returns {*} Default value.
+     */
+    get defaultValue() {
+        throw new Error("Method not implemented");
+    }
+
+    /**
+     * Returns the new value of the field after editing.
+     *
+     * @abstract
+     * @returns {*} New value.
+     */
+    get newValue() {
+        throw new Error("Method not implemented");
+    }
+
+    /**
+     * Builds the display view.
+     *
+     * @protected
+     * @abstract
+     */
+    _buildDisplayView() {
+        throw new Error("Method not implemented");
+    }
+
+    /**
+     * Builds the edit view.
+     *
+     * @protected
+     * @abstract
+     */
+    _buildEditView() {
+        throw new Error("Method not implemented");
+    }
+
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @abstract
+     * @returns {boolean}
+     */
+    isValid() {
+        throw new Error("Method not implemented");
+    }
+
+}
+
+/**
+ * @file This file contains the CrudFieldDecorator object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
  *
  */
 
@@ -48,153 +461,262 @@ function isHidden(element) {
  * ------------------------------------------------------------------------
  */
 
-class CrudField {
+/**
+ * Class used to decorate custom fields in order to make them work
+ * like any other CrudField.
+ */
+class CrudFieldDecorator extends CrudField {
 
-    constructor(index, crudLine, columnDesc) {
-        this.edit = false;
-        this.index = index;
-        this.crudLine = crudLine;
-        this.columnDesc = columnDesc;
-        this.element = document.createElement("th");
-        this.element.className = "align-middle";
-        this.element.setAttribute("scope", "row");
+    /**
+     * Creates a CrudFieldDecorator.
+     *
+     * The Constructor of CrudFieldDecorator. Need an object instance for a
+     * custom field implemented as specified.
+     *
+     * @constructor
+     * @param {object}      customCrudField                  - The custom field object.
+     * @param {*}           customCrudField.value            - The value of the field.
+     * @param {object}      customCrudField.columnDesc       - The back-end description of the field column.
+     * @param {HTMLElement} customCrudField.element          - The html node of the field.
+     * @param {function}    customCrudField.getDefaultValue  - Function of the custom field object
+     *                                                         that gives its default value.
+     * @param {function}    customCrudField.getNewValue      - Function of the custom field object
+     *                                                         that gives its default new.
+     * @param {function}    customCrudField.buildDisplayView - Function of the custom field object
+     *                                                         that build its display view.
+     * @param {function}    customCrudField.buildEditView    - Function of the custom field object
+     *                                                         that build its edit view.
+     * @param {function}    customCrudField.isValid          - Function of the custom field object
+     *                                                         that check if its value is validated.
+     */
+    constructor(customCrudField) {
+        super();
+        /**
+         * The custom field object member.
+         *
+         * @private
+         * @type {object}
+         * @property {*}           value            - The value of the field.
+         * @property {object}      columnDesc       - The back-end description of the field column.
+         * @property {HTMLElement} element          - The html node of the field.
+         * @property {function}    getDefaultValue  - Function of the custom field object
+         *                                            that gives its default value.
+         * @property {function}    getNewValue      - Function of the custom field object
+         *                                            that gives its default new.
+         * @property {function}    buildDisplayView - Function of the custom field object
+         *                                            that build its display view.
+         * @property {function}    buildEditView    - Function of the custom field object
+         *                                            that build its edit view.
+         * @property {function}    isValid          - Function of the custom field object
+         *                                            that check if its value is validated.
+         */
+        this.__customCrudField = customCrudField;
+
     }
 
-    setValue(val) {
-        this.crudLine.getValues()[this.index] = val;
+    /* Getters & Setters */
+
+    /**
+     * Accessor of the custom field element.
+     *
+     * @readonly
+     */
+    get element() {
+        return this.__customCrudField.element;
     }
 
-    getValue() {
-        return this.crudLine.getValues()[this.index];
+    /**
+     * Accessor of the custom field column description.
+     *
+     * @readonly
+     */
+    get columnDesc() {
+        return this.__customCrudField.columnDesc;
     }
 
-    prepareDisplayView() {
-        this.edit = false;
-        resetElementHTML(this.element);
-        const fieldValue = this.getValue();
-        switch (this.columnDesc.type) {
-            case "text":
-                this.element.innerHTML = fieldValue;
-                break;
-            case "int":
-                this.element.innerHTML = fieldValue;
-                break;
-            case "select":
-                this.element.innerHTML = fieldValue;
-                break;
-            case "select-chips":
-                for (const val of fieldValue) {
-                    this.element.innerHTML = this.element.innerHTML.concat("<span style=\"font-size:0.9rem;\" class=\"badge badge-pill badge-secondary mt-1 mr-1 pb-2 pt-2\">"+val+"</span>");
-                }
-                break;
-        }
+    /** Accessor of the custom field value. */
+    get value() {
+        return (this.__customCrudField.value == null) ? this.__customCrudField.getDefaultValue() : this.__customCrudField.value;
     }
 
-    showDisplayView() {
-        this.prepareDisplayView();
-        this.crudLine.addColumn(this.element);
+    set value(val) {
+        this.__customCrudField.value = val;
     }
 
-    prepareEditView() {
-        this.edit = true;
-        resetElementHTML(this.element);
-        const self = this;
-        let fieldValue = this.getValue();
-        switch(this.columnDesc.type) {
-            case "text":
-                if(!fieldValue) {
-                    fieldValue = "";
-                }
-                this.element.innerHTML = "<input type=\"text\" class=\"form-control m-0\" placeholder=\""+this.columnDesc.name+"\" value=\""+fieldValue+"\" style=\"background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:auto !important;\">";
-                break;
-            case "int":
-                if(!fieldValue) {
-                    fieldValue = "";
-                }
-                this.element.innerHTML = "<input type=\"number\" class=\"form-control m-0\" placeholder=\""+this.columnDesc.name+"\" value=\""+fieldValue+"\" style=\"background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:auto !importan;\">";
-                break;
-            case "select":
-                if(!fieldValue) {
-                    fieldValue = "";
-                }
-                let selectHTML = "<select class=\"custom-select\">";
-                for(const choice of this.columnDesc.options.values) {
-                    selectHTML = selectHTML.concat("<option value=\""+choice+"\" "+((choice===fieldValue)?"selected":"")+">"+choice+"</option>");
-                }
-                selectHTML = selectHTML.concat("</select>");
-                this.element.innerHTML = selectHTML;
-                break;
-            case "select-chips":
-                // Create select
-                if(!fieldValue) {
-                    fieldValue = [];
-                }
-                const options = this.columnDesc.options.values.filter(x => !(fieldValue.includes(x)));
-                const selectChips = document.createElement("select");
-                selectChips.setAttribute("style", "width:auto !important");
-                selectChips.setAttribute("class", "custom-select mr-2");
-                selectChips.appendChild(createElement("<option>Sélectionner...</option>"));
-                for(const choice of options) {
-                    selectChips.appendChild(createElement("<option value=\""+choice+"\">"+choice+"</option>"));
-                }
-                selectChips.onchange = function() {
-                    const chips = self.createSelectChips(this.value);
-                    this.parentNode.appendChild(chips);
-                    this.options[this.selectedIndex].remove();
-                    this.selectedIndex = 0;
-                };
-                this.element.appendChild(selectChips);
-                // Create chips
-                for (const value of fieldValue) {
-                    this.element.appendChild(this.createSelectChips(value));
-                }
-                break;
-        }
+    /* Abstract methods implemented */
+
+    /**
+     * Gets the default value when actual value is undefined or null.
+     *
+     * @returns {*} Default value.
+     */
+    get defaultValue() {
+        return this.__customCrudField.getDefaultValue();
     }
 
-    showEditView() {
-        this.prepareEditView();
-        this.crudLine.addColumn(this.element);
-    }
-
-    validateEdit() {
+    /**
+     * Gets the new value of the field after editing.
+     *
+     * @returns {*} New value.
+     */
+    get newValue() {
         if(this.edit) {
-            switch (this.columnDesc.type) {
-                case "text":
-                    this.setValue(this.element.getElementsByTagName('input')[0].value);
-                    break;
-                case "int":
-                    const value = parseInt(this.element.getElementsByTagName('input')[0].value);
-                    if(!isNaN(value)) {
-                        this.setValue(value);
-                    }
-                    break;
-                case "select":
-                    this.setValue(this.element.getElementsByTagName('select')[0].value);
-                    break;
-                case "select-chips":
-                    const valuesArray = [];
-                    for(const value of this.element.getElementsByClassName("crudjs-chips")) {
-                        valuesArray.push(value.textContent);
-                    }
-                    this.setValue(valuesArray);
-                    break;
+            return this.__customCrudField.getNewValue();
+        }
+        return this.value;
+    }
+
+    /**
+     * Builds the display view.
+     *
+     * @protected
+     */
+    _buildDisplayView() {
+        this.__customCrudField.buildDisplayView();
+    }
+
+    /**
+     * Builds the edit view.
+     *
+     * @protected
+     */
+    _buildEditView() {
+        this.__customCrudField.buildEditView();
+    }
+
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @returns {boolean}
+     */
+    isValid() {
+        return this.__customCrudField.isValid();
+    }
+
+}
+
+/**
+ * @file This file contains the CrudFieldFactory object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+/** Factory class used to create CrudField objects. Also implements singleton. */
+class CrudFieldFactory {
+
+    /**
+     * Returns unique CrudFieldFactor instance.
+     *
+     * @static
+     * @returns {CrudFieldFactory}
+     */
+    static getInstance() {
+        if(!this._instance) {
+            this._instance = new this();
+        }
+        return this._instance;
+    }
+
+    /**
+     * Creates a CrudFieldFactory.
+     *
+     * @constructor
+     */
+    constructor() {
+        /**
+         * Dictionary for class cache.
+         *
+         * @private
+         * @type {object}
+         */
+        this.__cls = {};
+        /**
+         * Dictionary for custom classes.
+         *
+         * @private
+         * @type {object}
+         */
+        this.__customCls = {};
+        if(typeof CUSTOM_FIELDS !== 'undefined' && CUSTOM_FIELDS !== null) {
+            for(const field in CUSTOM_FIELDS) {
+                if(CUSTOM_FIELDS.hasOwnProperty(field)) {
+                    this.__customCls[field] = CUSTOM_FIELDS[field];
+                }
             }
         }
     }
 
-    createSelectChips(value) {
-        const chips = createElement("<span style=\"font-size:0.9rem;\" class=\"crudjs-chips badge badge-pill badge-secondary mt-1 mr-1 pb-2 pt-2\">"+value+"<span class=\"crudjs-remove-chips-btn bg-light rounded-circle pl-1 pr-1 text-secondary ml-1\" aria-hidden=\"true\"><i class=\"fas fa-times\" aria-hidden=\"true\"></i></span></span>");
-        const removeChipsFunction = function() {
-            const chips = this.parentNode;
-            const newOption = document.createElement("option");
-            newOption.value = chips.textContent;
-            newOption.textContent = newOption.value;
-            chips.parentNode.getElementsByTagName('select')[0].appendChild(newOption);
-            chips.remove();
-        };
-        chips.getElementsByClassName('crudjs-remove-chips-btn')[0].onclick = removeChipsFunction;
-        return chips;
+    /**
+     * Gets the name of the CrudField class from its back-end name.
+     *
+     * This function gets a CrudField implentation from its back-end name.
+     * Examples : - int = IntCrudField
+     *            - select-chips = SelectChipsCrudField
+     *
+     * @private
+     * @param   {string} name - The name of the field.
+     * @returns {string} The name of the class.
+     */
+    __getClassName(name) {
+        const parts = name.split("-");
+        for(let i = 0; i < parts.length; i++) {
+            parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1);
+        }
+        return parts.join('') + "CrudField";
+    }
+
+    /**
+     * Gets an implemented CrudField class from its class name.
+     *
+     * @private
+     * @param   {string}   name - The name of the class.
+     * @returns {function} The class.
+     */
+    __getClass(name) {
+        const className = this.__getClassName(name);
+        if(!this.__cls[name]) {
+            if(className.match(/^[a-zA-Z0-9_]+$/)) {
+                try {
+                    /* jshint ignore:start */
+                    this.__cls[name] = eval(className);
+                    /* jshint ignore:end */
+                } catch (e) {
+                    if(e.name === "ReferenceError") {
+                        return undefined;
+                    }
+                    console.log(e);
+                }
+            } else {
+                throw new Error(`Unexpected name: ${className}`);
+            }
+        }
+        return this.__cls[name];
+    }
+
+    /**
+     * Creates a CrudField.
+     *
+     * @param   {string}        name       - The field name.
+     * @param   {*}             value      - The value of the field.
+     * @param   {object}        columnDesc - The back-end description of the field column.
+     * @param   {CrudComponent} crud       - The crud component.
+     * @returns {object}
+     */
+    create(name, value, columnDesc, crud) {
+        if(this.__customCls[name]) {
+            const _customField = this.__customCls[name];
+            return new CrudFieldDecorator(new _customField(value, columnDesc, crud));
+        }
+        const _field = this.__getClass(name);
+        return (_field == null) ? _field : new _field(value, columnDesc, crud);
     }
 
 }
@@ -203,7 +725,8 @@ class CrudField {
  * @file This file contains the CrudEditLine object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
+ * @since 0.0.1
  *
  */
 
@@ -221,8 +744,10 @@ class CrudEditLine {
         this.element = document.createElement("tr");
         this.element.className = "crudjs-edit-line";
         this.fields = [];
+        const columns = this.crudTable.crud.getData().columns;
+        const factory = CrudFieldFactory.getInstance();
         for(var i = 0; i < this.values.length; i++) {
-            this.fields.push(new CrudField(i, this, this.crudTable.getCrudComponent().getData().columns[i]));
+            this.fields.push(factory.create(columns[i].type, this.values[i], columns[i], this.crudTable.crud));
         }
         this.showDisplayView();
     }
@@ -232,19 +757,21 @@ class CrudEditLine {
         this.addNumberColumn();
         for(const field of this.fields) {
             field.showDisplayView();
+            this.addColumn(field.element);
         }
-        if(this.crudTable.getCrudComponent().isEditable()) {
+        if(this.crudTable.crud.isEditable()) {
             this.addActionsColumn();
         }
         this.crudTable.enableButtons();
     }
 
     showEditView() {
-        if(this.crudTable.getCrudComponent().isEditable()) {
+        if(this.crudTable.crud.isEditable()) {
             resetElementHTML(this.element);
             this.addNumberColumn();
             for(const field of this.fields) {
                 field.showEditView();
+                this.addColumn(field.element);
             }
             this.addEditActionsColumn();
             this.crudTable.disableButtons();
@@ -273,18 +800,19 @@ class CrudEditLine {
 
     addNumberColumn() {
         const thNumber = document.createElement("th");
-        thNumber.className = "crudjs-line-number align-middle";
+        thNumber.className = "crudjs-line-number text-center";
         thNumber.setAttribute("scope", "row");
         this.element.appendChild(thNumber);
     }
 
     addActionsColumn() {
+        const crud = this.crudTable.crud;
         const self = this;
         const tdActions = document.createElement("td");
         tdActions.className = "text-right";
         tdActions.innerHTML = `
-            <button type="button" style="width:45px;" class="crudjs-edit-btn btn btn-raised btn-info mb-1 rounded" title="Editer"><i class="fas fa-pencil-alt"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#`+this.crudTable.modalDeleteId+`" title="Supprimer"><i class="fas fa-trash"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-edit-btn btn btn-raised btn-info mb-1 rounded" title="${crud.text("line.btn.edit")}"><i class="fas fa-pencil-alt"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#`+this.crudTable.modalDeleteId+`" title="${crud.text("line.btn.delete")}"><i class="fas fa-trash"></i></button>
         `;
         tdActions.getElementsByClassName('crudjs-edit-btn')[0].onclick = function() {
             self.showEditView();
@@ -298,7 +826,7 @@ class CrudEditLine {
                     self.element.style.display = "none";
                 } else {
                     self.element.remove();
-                    const lineArray = self.crudTable.getCrudComponent().getData().values;
+                    const lineArray = self.crudTable.crud.getData().values;
                     lineArray.splice(lineArray.indexOf(self.values), 1);
                 }
                 self.crudTable.updateLineNumbers();
@@ -308,25 +836,38 @@ class CrudEditLine {
     }
 
     addEditActionsColumn() {
+        const crud = this.crudTable.crud;
         const self = this;
         const tdActions = document.createElement("td");
         tdActions.className = "text-right";
         tdActions.innerHTML = `
-            <button type="button" style="width:45px;" class="crudjs-valid-btn btn btn-raised btn-success mb-1 rounded" title="Valider"><i class="fas fa-sm fa-check"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-cancel-btn btn btn-raised btn-danger mb-1 rounded" title="Annuler"><i class="fas fa-times"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-validate-btn btn btn-raised btn-success mb-1 rounded" title="${crud.text("line.btn.validate")}"><i class="fas fa-sm fa-check"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-cancel-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.cancel")}"><i class="fas fa-times"></i></button>
         `;
-        tdActions.getElementsByClassName('crudjs-valid-btn')[0].onclick = function() {
+        tdActions.getElementsByClassName('crudjs-validate-btn')[0].onclick = function() {
 
-            for(const field of self.fields) {
-                field.validateEdit();
+            const errorMessages = [];
+            for (let i = 0; i < self.values.length; i++) {
+                if(!self.fields[i].isValid()) {
+                    errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${self.fields[i].columnDesc.name}'`);
+                }
             }
+            if(errorMessages  != null && errorMessages.length > 0) {
+                for (const errorMsg of errorMessages) {
+                    crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
+                }
+            } else {
+                for (let i = 0; i < self.values.length; i++) {
+                    self.values[i] = self.fields[i].validate();
+                }
 
-            if(self.getStatus() === "S") {
-                self.setStatus("M");
+                if(self.getStatus() === "S") {
+                    self.setStatus("M");
+                }
+
+                self.showDisplayView();
+                self.crudTable.updateLineNumbers();
             }
-
-            self.showDisplayView();
-            self.crudTable.updateLineNumbers();
         };
         tdActions.getElementsByClassName('crudjs-cancel-btn')[0].onclick = function() {
             self.showDisplayView();
@@ -341,7 +882,8 @@ class CrudEditLine {
  * @file This file contains the CrudAddLine object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
+ * @since 0.0.1
  *
  */
 
@@ -357,11 +899,12 @@ class CrudAddLine {
         this.crudTable = crudTable;
         this.element = document.createElement("tr");
         this.element.className = "crudjs-add-line";
-        const columns = this.crudTable.getCrudComponent().getData().columns;
+        const columns = this.crudTable.crud.getData().columns;
         this.initData(columns.length);
         this.fields = [];
+        const factory = CrudFieldFactory.getInstance();
         for(var i = 0; i < this.values.length; i++) {
-            this.fields.push(new CrudField(i, this, columns[i]));
+            this.fields.push(factory.create(columns[i].type, this.values[i], columns[i], this.crudTable.crud));
         }
         this.show();
     }
@@ -377,8 +920,9 @@ class CrudAddLine {
         this.addEmptyColumn();
         for(const field of this.fields) {
             field.showEditView();
+            this.addColumn(field.element);
         }
-        if(this.crudTable.getCrudComponent().isEditable()) {
+        if(this.crudTable.crud.isEditable()) {
             this.addActionsColumn();
         }
         this.crudTable.enableButtons();
@@ -403,30 +947,47 @@ class CrudAddLine {
     }
 
     addActionsColumn() {
+        const crud = this.crudTable.crud;
         const self = this;
         const tdActions = document.createElement("td");
         tdActions.className = "text-right";
         tdActions.innerHTML = `
-            <button type="button" style="width:45px;" class="crudjs-add-btn btn btn-raised btn-secondary mb-1 rounded" title="Ajouter"><i class="fas fa-plus"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-add-cancel-btn btn btn-raised btn-danger mb-1 rounded" title="Réinitialiser"><i class="fas fa-times"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-add-btn btn btn-raised btn-secondary mb-1 rounded" title="${crud.text("line.btn.add")}"><i class="fas fa-plus"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-add-cancel-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.addCancel")}"><i class="fas fa-times"></i></button>
         `;
         tdActions.getElementsByClassName('crudjs-add-btn')[0].onclick = function() {
-            for(const field of self.fields) {
-                field.validateEdit();
-            }
-            const values = self.values;
-            self.crudTable.getCrudComponent().getData().values.push(values);
-            self.crudTable.addCrudLine(new CrudEditLine(values, self.crudTable));
 
-            self.initData(self.values.length);
-            for(const field of self.fields) {
-                field.prepareEditView();
+            const errorMessages = [];
+            for (let i = 0; i < self.values.length; i++) {
+                if(!self.fields[i].isValid()) {
+                    errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${self.fields[i].columnDesc.name}'`);
+                }
             }
-            self.crudTable.updateLineNumbers();
+            if(errorMessages != null && errorMessages.length > 0) {
+                for (const errorMsg of errorMessages) {
+                    crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
+                }
+            } else {
+                for (let i = 0; i < self.values.length; i++) {
+                    self.values[i] = self.fields[i].validate();
+                }
+
+                const values = self.values;
+                self.crudTable.crud.getData().values.push(values);
+                self.crudTable.addCrudLine(new CrudEditLine(values, self.crudTable));
+
+                self.initData(self.values.length);
+                for (let i = 0; i < self.values.length; i++) {
+                    self.fields[i].value = self.values[i];
+                    self.fields[i].update();
+                }
+                self.crudTable.updateLineNumbers();
+            }
         };
         tdActions.getElementsByClassName('crudjs-add-cancel-btn')[0].onclick = function() {
             for(const field of self.fields) {
-                field.prepareEditView();
+                field.value = field.defaultValue;
+                field.update();
             }
             self.crudTable.updateLineNumbers();
         };
@@ -451,8 +1012,8 @@ class CrudAddLine {
 
 class CrudTable {
 
-    constructor(crudComponent) {
-        this.crudComponent = crudComponent;
+    constructor(crud) {
+        this.crud = crud;
         this.element = createElement("<div class=\"table-responsive\"></div>");
         this.element.innerHTML = `
         <table class="table">
@@ -484,26 +1045,26 @@ class CrudTable {
 
     renderHead() {
         this.thead.innerHTML = `<tr><th scope="col"><strong>#</strong></th></tr>`;
-        for(const col of this.crudComponent.getData().columns) {
+        for(const col of this.crud.getData().columns) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
             th.innerHTML = "<strong>"+col.name+"</strong>";
             this.thead.children[0].appendChild(th);
         }
-        if(this.crudComponent.isEditable()) {
+        if(this.crud.isEditable()) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
             th.className = "text-right pr-3";
-            th.innerHTML = "<strong>Action(s)</strong>";
+            th.innerHTML = `<strong>${this.crud.text("table.column.actionName")}</strong>`;
             this.thead.children[0].appendChild(th);
         }
     }
 
     renderLines() {
-        if(this.getCrudComponent().isEditable()) {
+        if(this.getCrud().isEditable()) {
             this.addCrudLine(new CrudAddLine(this));
         }
-        const values = this.crudComponent.getData().values;
+        const values = this.crud.getData().values;
         for(var i = 0; i < values.length; i++) {
             this.addCrudLine(new CrudEditLine(values[i], this));
         }
@@ -558,17 +1119,17 @@ class CrudTable {
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Attention !</h5>
+                <h5 class="modal-title">${this.crud.text("table.modal.delete.title")}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div class="modal-body">
-                Voulez-vous vraiment supprimer cette ligne ?
+                ${this.crud.text("table.modal.delete.message")}
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">Non</button>
-                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">Oui</button>
+                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">${this.crud.text("basic.no")}</button>
+                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">${this.crud.text("basic.yes")}</button>
               </div>
             </div>
           </div>
@@ -592,8 +1153,8 @@ class CrudTable {
         return this.modalDeleteId;
     }
 
-    getCrudComponent() {
-        return this.crudComponent;
+    getCrud() {
+        return this.crud;
     }
 
 }
@@ -611,6 +1172,7 @@ CrudTable.ID = 0;
  *
  * @author Kévin Delcourt
  * @version 0.0.2
+ * @since 0.0.1
  *
  */
 
@@ -630,7 +1192,8 @@ CrudTable.ID = 0;
 
 class CrudRequest {
 
-    constructor(url, addMessageFunc) {
+    constructor(crud, url, addMessageFunc) {
+        this.crud = crud;
         this.url = url;
         this.addMessageFunc = addMessageFunc;
     }
@@ -705,13 +1268,13 @@ class CrudRequest {
             json.actions.forEach(function(action) {
                 if(!("result" in action)) {
                     self.noError = false;
-                    self.addMessageFunc("danger","Error","Bad response");
+                    self.addMessageFunc("danger", self.crud.text("basic.error"), self.crud.text("request.badResponse"), 5000);
                 } else {
                     self.handle(action, values);
                 }
             });
             if(self.noError) {
-                self.addMessageFunc("success","OK","Sauvegarde effectuée");
+                self.addMessageFunc("success", self.crud.text("basic.ok"), self.crud.text("request.okResponse"), 5000);
             }
         }).catch(function(error) {
             console.error(error);
@@ -724,7 +1287,7 @@ class CrudRequest {
             case "NEW":
                 action.result.forEach(function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning","Erreur","Ajout de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -736,7 +1299,7 @@ class CrudRequest {
             case "MODIFIED":
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning","Erreur","Modification de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -749,7 +1312,7 @@ class CrudRequest {
                 let valuesToDelete = [];
                 action.result.forEach( function(val,i){
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
                     } else {
                         const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));
@@ -781,7 +1344,7 @@ class CrudRequest {
 
 class CrudComponent extends HTMLElement {
 
-    static get observedAttributes() { return ['url', 'save-button', 'editable']; }
+    static get observedAttributes() { return ['lang', 'url', 'save-button']; }
 
     constructor() {
         super();
@@ -793,47 +1356,73 @@ class CrudComponent extends HTMLElement {
 
         let settingsOk = true;
 
+        const lang = this.getAttribute("lang");
         const url = this.getAttribute("url");
-        const editable = this.getAttribute("editable");
         const saveButtonId = this.getAttribute("save-button");
 
         this.resetDisplay();
 
-        this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
-        this.setAttr("errorElement", createElement(`
-            <div class="alert alert-warning" role="alert">
-                <strong><span class="crudjs-error-t">ERROR</span>:</strong>
-                <span class="crudjs-error-m">Unknown</span>
-            </div>
-            `)
-        );
-        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;bottom:10px;z-index:100;"></div>`));
-
-        if(url === null && settingsOk) {
-            settingsOk = false;
-        } else {
-            this.setAttr("url", url);
-        }
-
-        if(editable !== null && settingsOk) {
-            if(saveButtonId !== null) {
-                const saveButton = document.getElementById(saveButtonId);
-                if(saveButton !== null) {
-                    this.setAttr("editable", true);
-                    this.setAttr("saveButton", saveButton);
-                } else {
-                    settingsOk = false;
-                }
+        if(lang != null) {
+            const attrLang = lang.slice(0, 2);
+            if(langExist(attrLang)) {
+                this.setAttr("langOrigin", "ATTRIBUTE");
+                this.setAttr("lang", attrLang);
             } else {
                 settingsOk = false;
             }
         } else {
-            this.setAttr("editable", false);
+            if(document.documentElement.lang != null && document.documentElement.lang.length >= 2) {
+                const docLang = document.documentElement.lang.slice(0, 2);
+                if(langExist(docLang)) {
+                    this.setAttr("langOrigin", "PAGE");
+                    this.setAttr("lang", docLang);
+                } else {
+                    settingsOk = false;
+                }
+            } else if(window.navigator) {
+                const navLang = (window.navigator.language!=null&&window.navigator.language.length>=2)?window.navigator.language.slice(0,2):((window.navigator.userLanguage!=null&&window.navigator.userLanguage.length>=2)?window.navigator.userLanguage.slice(0,2):null);
+                if(navLang != null && langExist(navLang)) {
+                    this.setAttr("langOrigin", "NAVIGATOR");
+                    this.setAttr("lang", navLang);
+                } else {
+                    this.setAttr("langOrigin", "DEFAULT");
+                    this.setAttr("lang", DEFAULT_LANG);
+                }
+            } else {
+                this.setAttr("langOrigin", "DEFAULT");
+                this.setAttr("lang", DEFAULT_LANG);
+            }
         }
+
+        if(url != null && settingsOk) {
+            this.setAttr("url", url);
+        } else {
+            settingsOk = false;
+        }
+
+        if(saveButtonId != null && settingsOk) {
+            const saveButton = document.getElementById(saveButtonId);
+            if(saveButton != null) {
+                this.setAttr("saveButton", saveButton);
+            } else {
+                settingsOk = false;
+            }
+        }
+
+        this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
+        this.setAttr("errorElement", createElement(`
+            <div class="alert alert-warning" role="alert">
+                <strong><span class="crudjs-error-t">${this.text("basic.error").toUpperCase()}</span>:</strong>
+                <span class="crudjs-error-m">Unknown</span>
+            </div>
+            `)
+        );
+        this.setAttr("messagesElement", createElement(`<div style="position:fixed;right:10px;bottom:10px;z-index:100;pointer-events:none"></div>`));
+
 
         if(settingsOk) {
             this.setAttr("data", null);
-            this.setAttr("request", new CrudRequest(this.getUrl(), this.getAddMessageWrapper()));
+            this.setAttr("request", new CrudRequest(this, this.getUrl(), this.getAddMessageWrapper()));
             this.setAttr("table", new CrudTable(this));
             document.body.appendChild(this.getAttr("messagesElement"));
             if(this.isEditable()) {
@@ -844,7 +1433,7 @@ class CrudComponent extends HTMLElement {
             }
             this.load();
         } else {
-            this.displayError("Error", "Incorrect configuration. If you want to have an editable crud don't forget to give it a save-button.");
+            this.displayError(this.text("basic.error"), this.text("component.configurationError"));
         }
 
     }
@@ -857,7 +1446,7 @@ class CrudComponent extends HTMLElement {
     }
 
     wrongUrl(error) {
-        this.displayError("Error", "An error occured while trying to fetch resource. See : " + error);
+        this.displayError(this.text("basic.error"), `${this.text("component.urlError")} ${error}`);
     }
 
     dataLoaded(json) {
@@ -873,12 +1462,16 @@ class CrudComponent extends HTMLElement {
 
     // Displays
 
+    text(strRequest) {
+        return text(this.getLang(), strRequest);
+    }
+
     addMessage(typeM, titleM, textM, timeM) {
         if(timeM == undefined) {
             timeM = 60000;
         }
         const toast = createElement(`
-            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
+            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
               <strong>`+titleM+`:</strong> `+textM+`
               <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
@@ -954,12 +1547,16 @@ class CrudComponent extends HTMLElement {
         return this.getData().values;
     }
 
+    getLang() {
+        return this.getAttr("lang");
+    }
+
     getUrl() {
         return this.getAttr("url");
     }
 
     isEditable() {
-        return this.getAttr("editable");
+        return this.getAttr("saveButton") != null;
     }
 
     setChild(child) {
@@ -971,8 +1568,8 @@ class CrudComponent extends HTMLElement {
 
     getAddMessageWrapper() {
         const self = this;
-        const addMessageFuncWrapper = function(typeM, titleM, textM) {
-            self.addMessage(typeM, titleM, textM);
+        const addMessageFuncWrapper = function(typeM, titleM, textM, timeM) {
+            self.addMessage(typeM, titleM, textM, timeM);
         };
         return addMessageFuncWrapper;
     }

@@ -38,7 +38,7 @@
                 <div class="tab-pane fade show active" id="demo-editable" role="tabpanel">
 
                     <button id="save-btn-1" type="button" name="button" class="btn btn-raised btn-warning">SAVE</button>
-                    <crud-js url="/demo/data" save-button="save-btn-1" editable></crud-js>
+                    <crud-js url="/demo/data" save-button="save-btn-1"></crud-js>
 
                 </div>
                 <div class="tab-pane fade" id="demo-not-editable" role="tabpanel">
@@ -48,7 +48,7 @@
                 </div>
                 <div class="tab-pane fade" id="demo-error-editable" role="tabpanel">
 
-                    <crud-js url="/demo/data" editable></crud-js>
+                    <crud-js url="/demo/data" save-button="save-btn-not-valid"></crud-js>
 
                 </div>
                 <div class="tab-pane fade" id="demo-error-false-url" role="tabpanel">
@@ -58,8 +58,6 @@
                 </div>
             </div>
 
-
-
           </div>
         </div>
 
@@ -68,6 +66,51 @@
         <script src="/dependencies/bootstrap-material-design/dist/js/bootstrap-material-design.min.js" charset="utf-8"></script>
         <script>
             $(document).ready(function() { $('body').bootstrapMaterialDesign(); });
+
+            function validateEmail(email) {
+                var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                return re.test(email);
+            }
+
+            function EmailField(value, columnDesc, crud) {
+                this.value = value;
+                this.columnDesc = columnDesc;
+                this.crud = crud;
+                this.element = document.createElement("td");
+            }
+
+            EmailField.prototype.getDefaultValue = function() {
+                return "";
+            }
+
+            EmailField.prototype.getNewValue = function() {
+                var elem = this.element.getElementsByTagName('input')[0];
+                if(elem) {
+                    return elem.value;
+                }
+                return this.value;
+            }
+
+            EmailField.prototype.buildDisplayView = function() {
+                this.element.innerHTML = this.value;
+            }
+
+            EmailField.prototype.buildEditView = function() {
+                var value = this.value;
+                if(!value) {
+                    value = this.getDefaultValue();
+                }
+                this.element.innerHTML = `<input type="email" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0) !important;width:auto !important;">`;
+            }
+
+            EmailField.prototype.isValid = function() {
+                var newValue = this.getNewValue();
+                return newValue != null && typeof newValue === "string" && validateEmail(newValue);
+            }
+
+            var CUSTOM_FIELDS = {
+                'email': EmailField
+            };
         </script>
         <script src="/js/demo.js" charset="utf-8"></script>
         <script src="/crudjs/index.js" type="module" charset="utf-8"></script>

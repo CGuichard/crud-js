@@ -39,6 +39,11 @@ app.get('/demo/data', function(req, res) {
                 "options": {}
             },
             {
+                "name": "Mail",
+                "type": "email",
+                "options": {}
+            },
+            {
                 "name": "Age",
                 "type": "int",
                 "options": {}
@@ -59,9 +64,9 @@ app.get('/demo/data', function(req, res) {
             }
         ],
         "values": [
-            ["Thomas", 16, "Men", ["Monday", "Tuesday", "Wednesday"]],
-            ["Giovanni", 54, "Women", ["Thursday", "Friday"]],
-            ["Super Cookie", 1, "Other", []]
+            ["Thomas", "thomas@example.com", 16, "Men", ["Monday", "Tuesday", "Wednesday"]],
+            ["Giovanni", "giovanni@example.com", 54, "Women", ["Thursday", "Friday"]],
+            ["Super Cookie", "super-cookie@example.com", 1, "Other", []]
         ]
     };
     res.json(json);
@@ -81,7 +86,7 @@ app.post('/demo/data', function(req, res) {
             case "MODIFIED":
                 req.body.actions[i].result = [];
                 for (j = 0; j < req.body.actions[i].new_values.length; j++) {
-                    req.body.actions[i].result.push(['OK']);
+                    req.body.actions[i].result.push(['ERROR', "Bitch"]);
                 }
                 break;
             case "DELETED":

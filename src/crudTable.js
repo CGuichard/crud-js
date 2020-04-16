@@ -21,8 +21,8 @@
  */
 
 import { createElement, isHidden, resetElementHTML } from "./utils.js";
-import { CrudAddLine } from "./crudAddLine.js";
-import { CrudEditLine } from "./crudEditLine.js";
+import { CrudAddLine } from "./lines/crudAddLine.js";
+import { CrudEditLine } from "./lines/crudEditLine.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -32,8 +32,8 @@ import { CrudEditLine } from "./crudEditLine.js";
 
 class CrudTable {
 
-    constructor(crudComponent) {
-        this.crudComponent = crudComponent;
+    constructor(crud) {
+        this.crud = crud;
         this.element = createElement("<div class=\"table-responsive\"></div>");
         this.element.innerHTML = `
         <table class="table">
@@ -65,26 +65,26 @@ class CrudTable {
 
     renderHead() {
         this.thead.innerHTML = `<tr><th scope="col"><strong>#</strong></th></tr>`;
-        for(const col of this.crudComponent.getData().columns) {
+        for(const col of this.crud.getData().columns) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
             th.innerHTML = "<strong>"+col.name+"</strong>";
             this.thead.children[0].appendChild(th);
         }
-        if(this.crudComponent.isEditable()) {
+        if(this.crud.isEditable()) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
             th.className = "text-right pr-3";
-            th.innerHTML = "<strong>Action(s)</strong>";
+            th.innerHTML = `<strong>${this.crud.text("table.column.actionName")}</strong>`;
             this.thead.children[0].appendChild(th);
         }
     }
 
     renderLines() {
-        if(this.getCrudComponent().isEditable()) {
+        if(this.getCrud().isEditable()) {
             this.addCrudLine(new CrudAddLine(this));
         }
-        const values = this.crudComponent.getData().values;
+        const values = this.crud.getData().values;
         for(var i = 0; i < values.length; i++) {
             this.addCrudLine(new CrudEditLine(values[i], this));
         }
@@ -139,17 +139,17 @@ class CrudTable {
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Attention !</h5>
+                <h5 class="modal-title">${this.crud.text("table.modal.delete.title")}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div class="modal-body">
-                Voulez-vous vraiment supprimer cette ligne ?
+                ${this.crud.text("table.modal.delete.message")}
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">Non</button>
-                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">Oui</button>
+                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">${this.crud.text("basic.no")}</button>
+                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">${this.crud.text("basic.yes")}</button>
               </div>
             </div>
           </div>
@@ -173,8 +173,8 @@ class CrudTable {
         return this.modalDeleteId;
     }
 
-    getCrudComponent() {
-        return this.crudComponent;
+    getCrud() {
+        return this.crud;
     }
 
 }

@@ -3,6 +3,7 @@
  *
  * @author Kévin Delcourt
  * @version 0.0.2
+ * @since 0.0.1
  *
  */
 
@@ -22,7 +23,8 @@
 
 class CrudRequest {
 
-    constructor(url, addMessageFunc) {
+    constructor(crud, url, addMessageFunc) {
+        this.crud = crud;
         this.url = url;
         this.addMessageFunc = addMessageFunc;
     }
@@ -97,13 +99,13 @@ class CrudRequest {
             json.actions.forEach(function(action) {
                 if(!("result" in action)) {
                     self.noError = false;
-                    self.addMessageFunc("danger","Error","Bad response");
+                    self.addMessageFunc("danger", self.crud.text("basic.error"), self.crud.text("request.badResponse"), 5000);
                 } else {
                     self.handle(action, values);
                 }
             });
             if(self.noError) {
-                self.addMessageFunc("success","OK","Sauvegarde effectuée");
+                self.addMessageFunc("success", self.crud.text("basic.ok"), self.crud.text("request.okResponse"), 5000);
             }
         }).catch(function(error) {
             console.error(error);
@@ -116,7 +118,7 @@ class CrudRequest {
             case "NEW":
                 action.result.forEach(function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning","Erreur","Ajout de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -128,7 +130,7 @@ class CrudRequest {
             case "MODIFIED":
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning","Erreur","Modification de la ligne '"+action.new_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -141,7 +143,7 @@ class CrudRequest {
                 let valuesToDelete = [];
                 action.result.forEach( function(val,i){
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning","Erreur","Suppression de la ligne '"+action.old_values[i].join(', ')+"' impossible: "+val[1]);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
                     } else {
                         const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));
