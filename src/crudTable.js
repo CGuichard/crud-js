@@ -45,8 +45,9 @@ class CrudTable {
         `;
         this.thead = this.element.getElementsByTagName('thead')[0];
         this.tbody = this.element.getElementsByTagName('tbody')[0];
-        this.modalDeleteId = "crudjs-modal-" + (++CrudTable.ID);
-        this.modalDelete = this.createModal();
+        this.deleteModalMessage = this.crud.text("table.modal.delete.message");
+        this.deleteModalId = "crudjs-modal-" + (++CrudTable.ID);
+        this.deleteModal = this.createModal();
     }
 
     // Displays
@@ -55,6 +56,7 @@ class CrudTable {
         this.resetTable();
         this.renderHead();
         this.renderLines();
+        this.renderModal();
         this.updateLineNumbers();
     }
 
@@ -90,8 +92,11 @@ class CrudTable {
         }
     }
 
-    addCrudLine(line) {
-        this.tbody.appendChild(line.getElement());
+    renderModal() {
+        const options = this.crud.getData().options;
+        if(options != null && options.deleteMessage != null) {
+            this.setDeleteModalMessage(options.deleteMessage);
+        }
     }
 
     updateLineNumbers() {
@@ -101,6 +106,10 @@ class CrudTable {
                 elem.textContent = i++;
             }
         }
+    }
+
+    addCrudLine(line) {
+        this.tbody.appendChild(line.getElement());
     }
 
     disableButtons() {
@@ -135,7 +144,7 @@ class CrudTable {
 
     createModal() {
         const modalDelete = createElement(`
-        <div class="modal fade" id="`+this.modalDeleteId+`" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" id="`+this.deleteModalId+`" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
@@ -145,7 +154,9 @@ class CrudTable {
                 </button>
               </div>
               <div class="modal-body">
-                ${this.crud.text("table.modal.delete.message")}
+                <div class="delete-message">
+                    ${this.deleteModalMessage}
+                </div>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">${this.crud.text("basic.no")}</button>
@@ -165,16 +176,26 @@ class CrudTable {
         return this.element;
     }
 
-    getModalDelete() {
-        return this.modalDelete;
+    getDeleteModal() {
+        return this.deleteModal;
     }
 
-    getModalDeleteId() {
-        return this.modalDeleteId;
+    getDeleteModalId() {
+        return this.deleteModalId;
     }
 
     getCrud() {
         return this.crud;
+    }
+
+    setDeleteModalMessage(val) {
+        this.deleteModalMessage = val;
+        if(this.deleteModal != null) {
+            const tmp = this.deleteModal.getElementsByClassName("delete-message");
+            if(tmp.length > 0) {
+                tmp[0].textContent = this.deleteModalMessage;
+            }
+        }
     }
 
 }

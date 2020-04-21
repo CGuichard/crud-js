@@ -322,7 +322,17 @@ In each action, a field _result_ appeared just like previously, each item of the
 - `["OK"]`: If the operation succeeded.
 - `["ERROR", errorText]`: If the operation failed. The variable `errorText` is a string detailing the error.
 
-### Add examples
+### General options
+
+#### Add custom delete message
+
+Development feature not documented for the moment.
+
+#### Add examples
+
+// TODO
+
+### Filter
 
 // TODO
 
@@ -332,11 +342,11 @@ In each action, a field _result_ appeared just like previously, each item of the
 
 ### Custom fields
 
-// TODO
+Development feature not documented for the moment.
 
 ### CSRF token
 
-// TODO
+Development feature not documented for the moment.
 
 
 ## <a name="contributing"></a> Contributing
