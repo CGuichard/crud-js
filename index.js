@@ -67,7 +67,10 @@ app.get('/demo/data', function(req, res) {
             ["Thomas", "thomas@example.com", 16, "Men", ["Monday", "Tuesday", "Wednesday"]],
             ["Giovanni", "giovanni@example.com", 54, "Women", ["Thursday", "Friday"]],
             ["Super Cookie", "super-cookie@example.com", 1, "Other", []]
-        ]
+        ],
+        "options": {
+            deleteMessage: "You want to delete this line? Sure at 100%?"
+        }
     };
     res.json(json);
 });

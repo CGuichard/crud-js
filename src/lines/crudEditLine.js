@@ -106,14 +106,14 @@ class CrudEditLine {
         tdActions.className = "text-right";
         tdActions.innerHTML = `
             <button type="button" style="width:45px;" class="crudjs-edit-btn btn btn-raised btn-info mb-1 rounded" title="${crud.text("line.btn.edit")}"><i class="fas fa-pencil-alt"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#`+this.crudTable.modalDeleteId+`" title="${crud.text("line.btn.delete")}"><i class="fas fa-trash"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#`+this.crudTable.getDeleteModalId()+`" title="${crud.text("line.btn.delete")}"><i class="fas fa-trash"></i></button>
         `;
         tdActions.getElementsByClassName('crudjs-edit-btn')[0].onclick = function() {
             self.showEditView();
             self.crudTable.updateLineNumbers();
         };
         tdActions.getElementsByClassName('crudjs-delete-btn')[0].onclick = function() {
-            const btnValidDelete = self.crudTable.getModalDelete().getElementsByClassName('crudjs-modal-valid')[0];
+            const btnValidDelete = self.crudTable.getDeleteModal().getElementsByClassName('crudjs-modal-valid')[0];
             btnValidDelete.onclick = function() {
                 if(self.getStatus() !== "N") {
                     self.setStatus("D");
