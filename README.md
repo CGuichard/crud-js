@@ -334,7 +334,7 @@ Development feature not documented for the moment.
 
 ### Filter
 
-// TODO
+Development feature not documented for the moment.
 
 ### Validators
 
