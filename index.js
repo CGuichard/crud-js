@@ -82,19 +82,19 @@ app.post('/demo/data', function(req, res) {
         switch(request) {
             case "NEW":
                 req.body.actions[i].result = [];
-                for (j = 0; j < req.body.actions[i].new_values.length; j++) {
+                for(j = 0; j < req.body.actions[i].new_values.length; j++) {
                     req.body.actions[i].result.push(['OK']);
                 }
                 break;
             case "MODIFIED":
                 req.body.actions[i].result = [];
-                for (j = 0; j < req.body.actions[i].new_values.length; j++) {
+                for(j = 0; j < req.body.actions[i].new_values.length; j++) {
                     req.body.actions[i].result.push(['ERROR', "Bitch"]);
                 }
                 break;
             case "DELETED":
                 req.body.actions[i].result = [];
-                for (j = 0; j < req.body.actions[i].old_values.length; j++) {
+                for(j = 0; j < req.body.actions[i].old_values.length; j++) {
                     req.body.actions[i].result.push(['OK']);
                 }
                 break;
@@ -112,7 +112,7 @@ var baseUrl = 'http://localhost:' + port;
 app.listen(port);
 console.log('Running index.js at ' + baseUrl + '/');
 console.log("Urls: ");
-for (var i = 0; i < app._router.stack.length; i++) {
+for(var i = 0; i < app._router.stack.length; i++) {
     if(app._router.stack[i].route !== undefined) {
         var typeMeth = (app._router.stack[i].route.methods.post) ? "POST" : "GET";
         console.log("> HTTP "+typeMeth+": "+baseUrl+app._router.stack[i].route.path);

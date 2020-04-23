@@ -29,7 +29,7 @@ class CrudRequest {
         this.addMessageFunc = addMessageFunc;
     }
 
-    get(callback, errorCallback){
+    get(callback, errorCallback) {
         fetch(this.url, {
             method: "GET"
         }).then(function(response) {
@@ -53,7 +53,7 @@ class CrudRequest {
 
         this.noError = true;
         let self = this;
-        values.forEach(function(element){
+        values.forEach(function(element) {
             switch(element.status) {
                 case 'N':
                     newNewValues.push(element);
@@ -95,7 +95,7 @@ class CrudRequest {
             })
         }).then(function(response) {
             return response.json();
-        }).then(function(json){
+        }).then(function(json) {
             json.actions.forEach(function(action) {
                 if(!("result" in action)) {
                     self.noError = false;
@@ -141,7 +141,7 @@ class CrudRequest {
                 break;
             case "DELETED":
                 let valuesToDelete = [];
-                action.result.forEach( function(val,i){
+                action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
