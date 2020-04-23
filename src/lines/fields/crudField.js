@@ -40,6 +40,14 @@ import { resetElementHTML } from "../../utils.js";
 const FIELD_STATE = Object.freeze({ VIEW: 1, EDIT: 2 });
 
 /**
+ * Basic css class needed for CrudField.
+ *
+ * @constant
+ * @type {string}
+ */
+const FIELD_CSS_CLASS = "align-middle";
+
+/**
  * ------------------------------------------------------------------------
  * Class Definition
  * ------------------------------------------------------------------------
@@ -58,6 +66,7 @@ class CrudField {
      */
     static createElement() {
         const element = document.createElement("td");
+        element.className = FIELD_CSS_CLASS;
         return element;
     }
 
@@ -273,12 +282,11 @@ class CrudField {
 
 }
 
-
 /**
  * ------------------------------------------------------------------------
  * Exports
  * ------------------------------------------------------------------------
  */
 
-export { CrudField, FIELD_STATE };
+export { CrudField, FIELD_STATE, FIELD_CSS_CLASS };
 export default CrudField;

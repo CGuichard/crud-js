@@ -20,7 +20,7 @@
  * ------------------------------------------------------------------------
  */
 
-import { CrudField } from './crudField.js';
+import { CrudField, FIELD_CSS_CLASS } from './crudField.js';
 
 /**
  * ------------------------------------------------------------------------
@@ -78,7 +78,9 @@ class CrudFieldDecorator extends CrudField {
          *                                            that check if its value is validated.
          */
         this.__customCrudField = customCrudField;
-
+        if(!this.__customCrudField.element.className.includes(FIELD_CSS_CLASS)) {
+            this.__customCrudField.element.className += ` ${FIELD_CSS_CLASS}`;
+        }
     }
 
     /* Getters & Setters */

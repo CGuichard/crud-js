@@ -63,7 +63,8 @@ class IntCrudField extends CrudField {
      */
     get newValue() {
         if(this.edit) {
-            return Number(this.element.getElementsByTagName('input')[0].value);
+            const value = this.element.getElementsByTagName('input')[0].value;
+            return (value.length > 0) ? Number(value) : null;
         }
         return this.value;
     }

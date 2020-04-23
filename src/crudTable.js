@@ -21,8 +21,8 @@
  */
 
 import { createElement, isHidden, resetElementHTML } from "./utils.js";
-import { CrudAddLine } from "./lines/crudAddLine.js";
-import { CrudEditLine } from "./lines/crudEditLine.js";
+import { AddCrudLine } from "./lines/addCrudLine.js";
+import { EditCrudLine } from "./lines/editCrudLine.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -84,11 +84,11 @@ class CrudTable {
 
     renderLines() {
         if(this.getCrud().isEditable()) {
-            this.addCrudLine(new CrudAddLine(this));
+            this.addCrudLine(new AddCrudLine(this));
         }
         const values = this.crud.getData().values;
         for(var i = 0; i < values.length; i++) {
-            this.addCrudLine(new CrudEditLine(values[i], this));
+            this.addCrudLine(new EditCrudLine(this, values[i]));
         }
     }
 
@@ -108,36 +108,19 @@ class CrudTable {
         }
     }
 
-    addCrudLine(line) {
-        this.tbody.appendChild(line.getElement());
+    addCrudLine(crudLine) {
+        crudLine.show();
+        this.tbody.appendChild(crudLine.element);
     }
 
     disableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-edit-btn')) {
-            elem.disabled = true;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-delete-btn')) {
-            elem.disabled = true;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-btn')) {
-            elem.disabled = true;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-cancel-btn')) {
+        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = true;
         }
     }
 
     enableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-edit-btn')) {
-            elem.disabled = false;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-delete-btn')) {
-            elem.disabled = false;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-btn')) {
-            elem.disabled = false;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-cancel-btn')) {
+        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = false;
         }
     }

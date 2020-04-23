@@ -215,6 +215,14 @@ const DEFAULT_LANG = "en";
 const FIELD_STATE = Object.freeze({ VIEW: 1, EDIT: 2 });
 
 /**
+ * Basic css class needed for CrudField.
+ *
+ * @constant
+ * @type {string}
+ */
+const FIELD_CSS_CLASS = "align-middle";
+
+/**
  * ------------------------------------------------------------------------
  * Class Definition
  * ------------------------------------------------------------------------
@@ -233,6 +241,7 @@ class CrudField {
      */
     static createElement() {
         const element = document.createElement("td");
+        element.className = FIELD_CSS_CLASS;
         return element;
     }
 
@@ -511,7 +520,9 @@ class CrudFieldDecorator extends CrudField {
          *                                            that check if its value is validated.
          */
         this.__customCrudField = customCrudField;
-
+        if(!this.__customCrudField.element.className.includes(FIELD_CSS_CLASS)) {
+            this.__customCrudField.element.className += ` ${FIELD_CSS_CLASS}`;
+        }
     }
 
     /* Getters & Setters */
@@ -644,7 +655,8 @@ class IntCrudField extends CrudField {
      */
     get newValue() {
         if(this.edit) {
-            return Number(this.element.getElementsByTagName('input')[0].value);
+            const value = this.element.getElementsByTagName('input')[0].value;
+            return (value.length > 0) ? Number(value) : null;
         }
         return this.value;
     }
@@ -1075,7 +1087,182 @@ class CrudFieldFactory {
 }
 
 /**
- * @file This file contains the CrudEditLine object.
+ * @file This file contains the CrudLine object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ * @since 0.0.1
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Constants
+ * ------------------------------------------------------------------------
+ */
+
+/**
+ * CrudField possible states enumeration.
+ *
+ * @constant
+ * @type {object}
+ * @property {number} VIEW - CrudField view value.
+ * @property {number} EDIT - CrudField edit value.
+ */
+const LINE_STATE = Object.freeze({ NEW: "N", MODIFIED: "M", DELETED: "D", SAVED: "S" });
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+class CrudLine {
+
+    static createEmptyValues(size) {
+        const values = new Array(size);
+        values.status = LINE_STATE.NEW;
+        values.oldValue = [...values];
+        return values;
+    }
+
+    constructor(crudTable, lineArray) {
+        this._crudTable = crudTable;
+        this._element = document.createElement("tr");
+        this._columns = this._crudTable.crud.getData().columns;
+        this._values = (lineArray != null) ? lineArray : CrudLine.createEmptyValues(this._columns.length);
+        const factory = CrudFieldFactory.getInstance();
+        this._fields = [];
+        for(var i = 0; i < this._values.length; i++) {
+            const field = factory.create(this._columns[i].type, this._values[i], this._columns[i], this._crudTable.crud);
+            this._fields.push(field);
+        }
+    }
+
+    /* Getters & Setters */
+
+    get crudTable() {
+        return this._crudTable;
+    }
+
+    get element() {
+        return this._element;
+    }
+
+    get columns() {
+        return this._columns;
+    }
+
+    get values() {
+        return this._values;
+    }
+
+    get fields() {
+        return this._fields;
+    }
+
+    get status() {
+        return this._values.status;
+    }
+
+    set values(val) {
+        if(val.length == this.values.length)
+            this._values = val;
+    }
+
+    set status(val) {
+        this._values.status = val;
+    }
+
+    /* State methods */
+
+    isNew() {
+        return this.status == LINE_STATE.NEW;
+    }
+
+    isModified() {
+        return this.status == LINE_STATE.MODIFIED;
+    }
+
+    isDeleted() {
+        return this.status == LINE_STATE.DELETED;
+    }
+
+    isSaved() {
+        return this.status == LINE_STATE.SAVED;
+    }
+
+    goNew() {
+        this.status = LINE_STATE.NEW;
+    }
+
+    goModified() {
+        this.status = LINE_STATE.MODIFIED;
+    }
+
+    goDeleted() {
+        this.status = LINE_STATE.DELETED;
+    }
+
+    goSaved() {
+        this.status = LINE_STATE.SAVED;
+    }
+
+    /* Show methods */
+
+    hide() {
+        this.element.style.display = "none";
+    }
+
+    remove() {
+        this.element.remove();
+        const dataValues = this.crudTable.crud.getData().values;
+        dataValues.splice(dataValues.indexOf(this.values), 1);
+    }
+
+    _reset() {
+        this.values = CrudLine.createEmptyValues(this.values.length);
+        this._update();
+    }
+
+    _update() {
+        for (let i = 0; i < this.values.length; i++) {
+            this.fields[i].value = this.values[i];
+            this.fields[i].update();
+        }
+    }
+
+    _prepareShow() {
+        resetElementHTML(this.element);
+    }
+
+    _addColumn(col) {
+        this.element.appendChild(col);
+    }
+
+    _addEmptyColumn() {
+        const thEmpty = document.createElement("th");
+        thEmpty.setAttribute("scope", "row");
+        this.element.appendChild(thEmpty);
+    }
+
+    /* Events */
+
+    _attachOnClickEvent(element, eventFuncName) {
+        const self = this;
+        element.onclick = function() { self[eventFuncName](); };
+    }
+
+    /* Abstract methods */
+
+    show() {
+        throw new Error("Method not implemented");
+    }
+
+}
+
+/**
+ * @file This file contains the EditCrudLine object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
  * @version 1.0.0
@@ -1089,150 +1276,134 @@ class CrudFieldFactory {
  * ------------------------------------------------------------------------
  */
 
-class CrudEditLine {
+class EditCrudLine extends CrudLine {
 
-    constructor(lineArray, crudTable) {
-        this.values = lineArray;
-        this.crudTable = crudTable;
-        this.element = document.createElement("tr");
+    constructor(crudTable, lineArray) {
+        super(crudTable, lineArray);
         this.element.className = "crudjs-edit-line";
-        this.fields = [];
-        const columns = this.crudTable.crud.getData().columns;
-        const factory = CrudFieldFactory.getInstance();
-        for(var i = 0; i < this.values.length; i++) {
-            this.fields.push(factory.create(columns[i].type, this.values[i], columns[i], this.crudTable.crud));
-        }
+    }
+
+    /* Show methods */
+
+    show() {
         this.showDisplayView();
     }
 
     showDisplayView() {
-        resetElementHTML(this.element);
-        this.addNumberColumn();
+        this._prepareShow();
+        this.__addNumberColumn();
         for(const field of this.fields) {
             field.showDisplayView();
-            this.addColumn(field.element);
+            this._addColumn(field.element);
         }
         if(this.crudTable.crud.isEditable()) {
-            this.addActionsColumn();
+            this.__addActionsColumn();
         }
-        this.crudTable.enableButtons();
     }
 
     showEditView() {
         if(this.crudTable.crud.isEditable()) {
-            resetElementHTML(this.element);
-            this.addNumberColumn();
+            this._prepareShow();
+            this.__addNumberColumn();
             for(const field of this.fields) {
                 field.showEditView();
-                this.addColumn(field.element);
+                this._addColumn(field.element);
             }
-            this.addEditActionsColumn();
-            this.crudTable.disableButtons();
+            this.__addEditActionsColumn();
         }
     }
 
-    getStatus() {
-        return this.values.status;
-    }
-
-    setStatus(status) {
-        this.values.status = status;
-    }
-
-    getElement() {
-        return this.element;
-    }
-
-    getValues() {
-        return this.values;
-    }
-
-    addColumn(col) {
-        this.element.appendChild(col);
-    }
-
-    addNumberColumn() {
+    __addNumberColumn() {
         const thNumber = document.createElement("th");
-        thNumber.className = "crudjs-line-number text-center";
+        thNumber.className = "crudjs-line-number align-middle text-center";
         thNumber.setAttribute("scope", "row");
         this.element.appendChild(thNumber);
     }
 
-    addActionsColumn() {
+    __addActionsColumn() {
         const crud = this.crudTable.crud;
-        const self = this;
         const tdActions = document.createElement("td");
-        tdActions.className = "text-right";
+        tdActions.className = "align-middle text-right";
         tdActions.innerHTML = `
-            <button type="button" style="width:45px;" class="crudjs-edit-btn btn btn-raised btn-info mb-1 rounded" title="${crud.text("line.btn.edit")}"><i class="fas fa-pencil-alt"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#`+this.crudTable.getDeleteModalId()+`" title="${crud.text("line.btn.delete")}"><i class="fas fa-trash"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-edit-btn btn btn-raised btn-info mb-1 rounded" title="${crud.text("line.btn.edit")}"><i class="fas fa-pencil-alt"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#${this.crudTable.getDeleteModalId()}" title="${crud.text("line.btn.delete")}"><i class="fas fa-trash"></i></button>
         `;
-        tdActions.getElementsByClassName('crudjs-edit-btn')[0].onclick = function() {
-            self.showEditView();
-            self.crudTable.updateLineNumbers();
-        };
-        tdActions.getElementsByClassName('crudjs-delete-btn')[0].onclick = function() {
-            const btnValidDelete = self.crudTable.getDeleteModal().getElementsByClassName('crudjs-modal-valid')[0];
-            btnValidDelete.onclick = function() {
-                if(self.getStatus() !== "N") {
-                    self.setStatus("D");
-                    self.element.style.display = "none";
-                } else {
-                    self.element.remove();
-                    const lineArray = self.crudTable.crud.getData().values;
-                    lineArray.splice(lineArray.indexOf(self.values), 1);
-                }
-                self.crudTable.updateLineNumbers();
-            };
-        };
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-edit-btn')[0], "editEvent");
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-delete-btn')[0], "deleteEvent");
         this.element.appendChild(tdActions);
     }
 
-    addEditActionsColumn() {
+    __addEditActionsColumn() {
         const crud = this.crudTable.crud;
-        const self = this;
         const tdActions = document.createElement("td");
         tdActions.className = "text-right";
         tdActions.innerHTML = `
             <button type="button" style="width:45px;" class="crudjs-validate-btn btn btn-raised btn-success mb-1 rounded" title="${crud.text("line.btn.validate")}"><i class="fas fa-sm fa-check"></i></button>
             <button type="button" style="width:45px;" class="crudjs-cancel-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.cancel")}"><i class="fas fa-times"></i></button>
         `;
-        tdActions.getElementsByClassName('crudjs-validate-btn')[0].onclick = function() {
-
-            const errorMessages = [];
-            for (let i = 0; i < self.values.length; i++) {
-                if(!self.fields[i].isValid()) {
-                    errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${self.fields[i].columnDesc.name}'`);
-                }
-            }
-            if(errorMessages  != null && errorMessages.length > 0) {
-                for (const errorMsg of errorMessages) {
-                    crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
-                }
-            } else {
-                for (let i = 0; i < self.values.length; i++) {
-                    self.values[i] = self.fields[i].validate();
-                }
-
-                if(self.getStatus() === "S") {
-                    self.setStatus("M");
-                }
-
-                self.showDisplayView();
-                self.crudTable.updateLineNumbers();
-            }
-        };
-        tdActions.getElementsByClassName('crudjs-cancel-btn')[0].onclick = function() {
-            self.showDisplayView();
-            self.crudTable.updateLineNumbers();
-        };
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-validate-btn')[0], "validateEditEvent");
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-cancel-btn')[0], "cancelEditEvent");
         this.element.appendChild(tdActions);
+    }
+
+    /* Events */
+
+    editEvent() {
+        this.showEditView();
+        this.crudTable.updateLineNumbers();
+        this.crudTable.disableButtons();
+    }
+
+    deleteEvent() {
+        const self = this;
+        const btnValidDelete = this.crudTable.getDeleteModal().getElementsByClassName('crudjs-modal-valid')[0];
+        btnValidDelete.onclick = function() {
+            if(self.isModified() || self.isSaved()) {
+                self.goDeleted();
+                self.hide();
+            } else if (self.isNew()) {
+                self.remove();
+            }
+            self.crudTable.updateLineNumbers();
+            self.crudTable.enableButtons();
+        };
+    }
+
+    validateEditEvent() {
+        const errorMessages = [];
+        for (let i = 0; i < this.values.length; i++) {
+            if(!this.fields[i].isValid()) {
+                errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
+            }
+        }
+        if(errorMessages  != null && errorMessages.length > 0) {
+            for (const errorMsg of errorMessages) {
+                this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 15000);
+            }
+        } else {
+            for (let i = 0; i < this.values.length; i++) {
+                this.values[i] = this.fields[i].validate();
+            }
+            if(this.isSaved()) {
+                this.goModified();
+            }
+            this.showDisplayView();
+            this.crudTable.updateLineNumbers();
+            this.crudTable.enableButtons();
+        }
+
+    }
+
+    cancelEditEvent() {
+        this.showDisplayView();
+        this.crudTable.updateLineNumbers();
+        this.crudTable.enableButtons();
     }
 
 }
 
 /**
- * @file This file contains the CrudAddLine object.
+ * @file This file contains the AddCrudLine object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
  * @version 1.0.0
@@ -1246,105 +1417,73 @@ class CrudEditLine {
  * ------------------------------------------------------------------------
  */
 
-class CrudAddLine {
+class AddCrudLine extends CrudLine {
 
     constructor(crudTable) {
-        this.crudTable = crudTable;
-        this.element = document.createElement("tr");
-        this.element.className = "crudjs-add-line";
-        const columns = this.crudTable.crud.getData().columns;
-        this.initData(columns.length);
-        this.fields = [];
-        const factory = CrudFieldFactory.getInstance();
-        for(var i = 0; i < this.values.length; i++) {
-            this.fields.push(factory.create(columns[i].type, this.values[i], columns[i], this.crudTable.crud));
+        super(crudTable);
+        if(this.crudTable.crud.isEditable()) {
+            this.element.className = "crudjs-add-line";
+        } else {
+            throw new Error("Cannot use AddCrudLine if CRUD is not ");
         }
-        this.show();
     }
 
-    initData(size) {
-        this.values = new Array(size);
-        this.values.status = "N";
-        this.values.oldValue = [...this.values];
-    }
+    /* Show methods */
 
     show() {
-        resetElementHTML(this.element);
-        this.addEmptyColumn();
+        this._prepareShow();
+        this._addEmptyColumn();
         for(const field of this.fields) {
             field.showEditView();
-            this.addColumn(field.element);
+            this._addColumn(field.element);
         }
-        if(this.crudTable.crud.isEditable()) {
-            this.addActionsColumn();
-        }
-        this.crudTable.enableButtons();
+        this.__addActionsColumn();
     }
 
-    getElement() {
-        return this.element;
-    }
-
-    getValues() {
-        return this.values;
-    }
-
-    addColumn(col) {
-        this.element.appendChild(col);
-    }
-
-    addEmptyColumn() {
-        const thEmpty = document.createElement("th");
-        thEmpty.setAttribute("scope", "row");
-        this.element.appendChild(thEmpty);
-    }
-
-    addActionsColumn() {
+    __addActionsColumn() {
         const crud = this.crudTable.crud;
-        const self = this;
         const tdActions = document.createElement("td");
         tdActions.className = "text-right";
         tdActions.innerHTML = `
-            <button type="button" style="width:45px;" class="crudjs-add-btn btn btn-raised btn-secondary mb-1 rounded" title="${crud.text("line.btn.add")}"><i class="fas fa-plus"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-add-cancel-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.addCancel")}"><i class="fas fa-times"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-add-btn btn btn-raised btn-secondary mb-1 rounded" title="${crud.text("line.btn.add")}"><i class="fas fa-plus"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-reset-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.addCancel")}"><i class="fas fa-times"></i></button>
         `;
-        tdActions.getElementsByClassName('crudjs-add-btn')[0].onclick = function() {
-
-            const errorMessages = [];
-            for (let i = 0; i < self.values.length; i++) {
-                if(!self.fields[i].isValid()) {
-                    errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${self.fields[i].columnDesc.name}'`);
-                }
-            }
-            if(errorMessages != null && errorMessages.length > 0) {
-                for (const errorMsg of errorMessages) {
-                    crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
-                }
-            } else {
-                for (let i = 0; i < self.values.length; i++) {
-                    self.values[i] = self.fields[i].validate();
-                }
-
-                const values = self.values;
-                self.crudTable.crud.getData().values.push(values);
-                self.crudTable.addCrudLine(new CrudEditLine(values, self.crudTable));
-
-                self.initData(self.values.length);
-                for (let i = 0; i < self.values.length; i++) {
-                    self.fields[i].value = self.values[i];
-                    self.fields[i].update();
-                }
-                self.crudTable.updateLineNumbers();
-            }
-        };
-        tdActions.getElementsByClassName('crudjs-add-cancel-btn')[0].onclick = function() {
-            for(const field of self.fields) {
-                field.value = field.defaultValue;
-                field.update();
-            }
-            self.crudTable.updateLineNumbers();
-        };
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-add-btn')[0], "addEvent");
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-reset-btn')[0], "resetEvent");
         this.element.appendChild(tdActions);
+    }
+
+    /* Events */
+
+    resetEvent() {
+        for(const field of this.fields) {
+            field.value = field.defaultValue;
+            field.update();
+        }
+    }
+
+    addEvent() {
+        const crud = this.crudTable.crud;
+        const errorMessages = [];
+        for (let i = 0; i < this.values.length; i++) {
+            if(!this.fields[i].isValid()) {
+                errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
+            }
+        }
+        if(errorMessages != null && errorMessages.length > 0) {
+            for (const errorMsg of errorMessages) {
+                crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
+            }
+        } else {
+            for (let i = 0; i < this.values.length; i++) {
+                this.values[i] = this.fields[i].validate();
+            }
+            const values = this.values;
+            crud.getData().values.push(values);
+            this.crudTable.addCrudLine(new EditCrudLine(this.crudTable, values));
+            this._reset();
+            this.crudTable.updateLineNumbers();
+        }
     }
 
 }
@@ -1417,11 +1556,11 @@ class CrudTable {
 
     renderLines() {
         if(this.getCrud().isEditable()) {
-            this.addCrudLine(new CrudAddLine(this));
+            this.addCrudLine(new AddCrudLine(this));
         }
         const values = this.crud.getData().values;
         for(var i = 0; i < values.length; i++) {
-            this.addCrudLine(new CrudEditLine(values[i], this));
+            this.addCrudLine(new EditCrudLine(this, values[i]));
         }
     }
 
@@ -1441,36 +1580,19 @@ class CrudTable {
         }
     }
 
-    addCrudLine(line) {
-        this.tbody.appendChild(line.getElement());
+    addCrudLine(crudLine) {
+        crudLine.show();
+        this.tbody.appendChild(crudLine.element);
     }
 
     disableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-edit-btn')) {
-            elem.disabled = true;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-delete-btn')) {
-            elem.disabled = true;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-btn')) {
-            elem.disabled = true;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-cancel-btn')) {
+        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = true;
         }
     }
 
     enableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-edit-btn')) {
-            elem.disabled = false;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-delete-btn')) {
-            elem.disabled = false;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-btn')) {
-            elem.disabled = false;
-        }
-        for(const elem of this.element.getElementsByClassName('crudjs-add-cancel-btn')) {
+        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = false;
         }
     }
@@ -1898,7 +2020,7 @@ class CrudComponent extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if(this.getData() && newValue) {
+        if(this.getData() != null && newValue != null) {
             this.init();
         }
     }
