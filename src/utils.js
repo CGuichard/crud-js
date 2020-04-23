@@ -34,10 +34,18 @@ function isHidden(element) {
     return element.style.display === "none";
 }
 
+function hide(element) {
+    element.style.display = "none";
+}
+
+function display(element) {
+    element.style.display = "";
+}
+
 /**
  * ------------------------------------------------------------------------
  * Exports
  * ------------------------------------------------------------------------
  */
 
-export { createElement, resetElementHTML, isHidden };
+export { createElement, resetElementHTML, isHidden, hide, display };

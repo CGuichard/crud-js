@@ -37,8 +37,17 @@
             <div class="tab-content p-4">
                 <div class="tab-pane fade show active" id="demo-editable" role="tabpanel">
 
-                    <button id="save-btn-1" type="button" name="button" class="btn btn-raised btn-warning">SAVE</button>
-                    <crud-js url="/demo/data" save-button="save-btn-1"></crud-js>
+                    <div class="row mb-3">
+                        <div class="col-sm-1">
+                            <button id="save-btn-demo" type="button" name="button" class="btn btn-raised btn-warning">SAVE</button>
+                        </div>
+                        <div class="col-sm-7"></div>
+                        <div class="col-sm-4">
+                            <input id="filter-demo" type="text" class="form-control form-control-sm" placeholder="Filter">
+                        </div>
+                    </div>
+
+                    <crud-js url="/demo/data" save-button="save-btn-demo" filter="filter-demo"></crud-js>
 
                 </div>
                 <div class="tab-pane fade" id="demo-not-editable" role="tabpanel">
