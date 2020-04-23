@@ -177,7 +177,7 @@ class CrudField {
      */
     constructor(value, columnDesc, crud) {
         /* Ensure non-instantiation. */
-        if (new.target === CrudField) {
+        if(new.target === CrudField) {
             throw new TypeError("Cannot construct CrudField instances directly");
         }
         /**
