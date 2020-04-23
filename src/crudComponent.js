@@ -213,7 +213,7 @@ class CrudComponent extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if(this.getData() && newValue) {
+        if(this.getData() != null && newValue != null) {
             this.init();
         }
     }
