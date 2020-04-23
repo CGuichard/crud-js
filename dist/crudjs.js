@@ -34,6 +34,14 @@ function isHidden(element) {
     return element.style.display === "none";
 }
 
+function hide(element) {
+    element.style.display = "none";
+}
+
+function display(element) {
+    element.style.display = "";
+}
+
 /**
  * @file This file contains CrudJS languages.
  *
@@ -258,7 +266,7 @@ class CrudField {
      */
     constructor(value, columnDesc, crud) {
         /* Ensure non-instantiation. */
-        if (new.target === CrudField) {
+        if(new.target === CrudField) {
             throw new TypeError("Cannot construct CrudField instances directly");
         }
         /**
@@ -953,7 +961,7 @@ class SelectChipsCrudField extends CrudField {
      * @protected
      */
     _buildDisplayView() {
-        for (const val of this.value) {
+        for(const val of this.value) {
             this.element.innerHTML = this.element.innerHTML.concat(`<span style="font-size:0.9rem;" class="badge badge-pill badge-secondary mt-1 mr-1 pb-2 pt-2">${val}</span>`);
         }
     }
@@ -982,7 +990,7 @@ class SelectChipsCrudField extends CrudField {
         };
         this.element.appendChild(selectChips);
         // Create chips
-        for (const value of fieldValue) {
+        for(const value of fieldValue) {
             this.element.appendChild(SelectChipsCrudField.createSelectChips(value));
         }
     }
@@ -1211,7 +1219,7 @@ class CrudLine {
     /* Show methods */
 
     hide() {
-        this.element.style.display = "none";
+        hide(this.element);
     }
 
     remove() {
@@ -1226,7 +1234,7 @@ class CrudLine {
     }
 
     _update() {
-        for (let i = 0; i < this.values.length; i++) {
+        for(let i = 0; i < this.values.length; i++) {
             this.fields[i].value = this.values[i];
             this.fields[i].update();
         }
@@ -1361,7 +1369,7 @@ class EditCrudLine extends CrudLine {
             if(self.isModified() || self.isSaved()) {
                 self.goDeleted();
                 self.hide();
-            } else if (self.isNew()) {
+            } else if(self.isNew()) {
                 self.remove();
             }
             self.crudTable.updateLineNumbers();
@@ -1371,17 +1379,17 @@ class EditCrudLine extends CrudLine {
 
     validateEditEvent() {
         const errorMessages = [];
-        for (let i = 0; i < this.values.length; i++) {
+        for(let i = 0; i < this.values.length; i++) {
             if(!this.fields[i].isValid()) {
                 errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
             }
         }
         if(errorMessages  != null && errorMessages.length > 0) {
-            for (const errorMsg of errorMessages) {
+            for(const errorMsg of errorMessages) {
                 this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 15000);
             }
         } else {
-            for (let i = 0; i < this.values.length; i++) {
+            for(let i = 0; i < this.values.length; i++) {
                 this.values[i] = this.fields[i].validate();
             }
             if(this.isSaved()) {
@@ -1465,17 +1473,17 @@ class AddCrudLine extends CrudLine {
     addEvent() {
         const crud = this.crudTable.crud;
         const errorMessages = [];
-        for (let i = 0; i < this.values.length; i++) {
+        for(let i = 0; i < this.values.length; i++) {
             if(!this.fields[i].isValid()) {
                 errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
             }
         }
         if(errorMessages != null && errorMessages.length > 0) {
-            for (const errorMsg of errorMessages) {
+            for(const errorMsg of errorMessages) {
                 crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
             }
         } else {
-            for (let i = 0; i < this.values.length; i++) {
+            for(let i = 0; i < this.values.length; i++) {
                 this.values[i] = this.fields[i].validate();
             }
             const values = this.values;
@@ -1694,7 +1702,7 @@ class CrudRequest {
         this.addMessageFunc = addMessageFunc;
     }
 
-    get(callback, errorCallback){
+    get(callback, errorCallback) {
         fetch(this.url, {
             method: "GET"
         }).then(function(response) {
@@ -1718,7 +1726,7 @@ class CrudRequest {
 
         this.noError = true;
         let self = this;
-        values.forEach(function(element){
+        values.forEach(function(element) {
             switch(element.status) {
                 case 'N':
                     newNewValues.push(element);
@@ -1760,7 +1768,7 @@ class CrudRequest {
             })
         }).then(function(response) {
             return response.json();
-        }).then(function(json){
+        }).then(function(json) {
             json.actions.forEach(function(action) {
                 if(!("result" in action)) {
                     self.noError = false;
@@ -1806,7 +1814,7 @@ class CrudRequest {
                 break;
             case "DELETED":
                 let valuesToDelete = [];
-                action.result.forEach( function(val,i){
+                action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 20000);
                         self.noError = false;
@@ -1855,6 +1863,8 @@ class CrudComponent extends HTMLElement {
         const lang = this.getAttribute("lang");
         const url = this.getAttribute("url");
         const saveButtonId = this.getAttribute("save-button");
+        const filterId = this.getAttribute("filter");
+        const filtersClass = this.getAttribute("filters");
 
         this.resetDisplay();
 
@@ -1905,6 +1915,45 @@ class CrudComponent extends HTMLElement {
             }
         }
 
+        if(filterId != null || filtersClass != null) {
+            this.setAttr("filters", []);
+            if(filterId != null) {
+                const filter = document.getElementById(filterId);
+                if(filter != null) {
+                    this.getAttr("filters").push(filter);
+                } else {
+                    settingsOk = false;
+                }
+            }
+            if(filtersClass != null) {
+                const filters = document.getElementsByClassName(filtersClass);
+                if(filters != null && filters.length > 0) {
+                    for(const filter of filters) {
+                        this.getAttr("filters").push(filter);
+                    }
+                } else {
+                    settingsOk = false;
+                }
+            }
+            const self = this;
+            const filterOnInputFunc = function() {
+                for(const filter of self.getAttr("filters")) {
+                    if(filter != this) {
+                        filter.value = this.value;
+                    }
+                }
+                self.filter(this.value);
+            };
+            const filterOnFocusFunc = function() {
+                self.filter(this.value);
+            };
+            for(const filter of this.getAttr("filters")) {
+                filter.value = "";
+                filter.oninput = filterOnInputFunc;
+                filter.onfocus = filterOnFocusFunc;
+            }
+        }
+
         this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
         this.setAttr("errorElement", createElement(`
             <div class="alert alert-warning" role="alert">
@@ -1934,6 +1983,41 @@ class CrudComponent extends HTMLElement {
 
     }
 
+    // Getters and Setters
+
+    setAttr(name, value) {
+        this.attr[name] = value;
+    }
+
+    getAttr(name) {
+        return this.attr[name];
+    }
+
+    getData() {
+        return this.getAttr("data");
+    }
+
+    getValues() {
+        return this.getData().values;
+    }
+
+    getLang() {
+        return this.getAttr("lang");
+    }
+
+    getUrl() {
+        return this.getAttr("url");
+    }
+
+    isEditable() {
+        return this.getAttr("saveButton") != null;
+    }
+
+    setChild(child) {
+        this.resetDisplay();
+        this.appendChild(child);
+    }
+
     // Requests
 
     load() {
@@ -1960,6 +2044,21 @@ class CrudComponent extends HTMLElement {
 
     text(strRequest) {
         return text(this.getLang(), strRequest);
+    }
+
+    filter(filterValue) {
+        for(const line of this.getElementsByClassName("crudjs-edit-line")) {
+            if(line.textContent.toLowerCase().includes(filterValue.toLowerCase())) {
+                if(isHidden(line)) {
+                    display(line);
+                }
+            } else {
+                if(!isHidden(line)) {
+                    hide(line);
+                }
+            }
+        }
+        this.getAttr("table").updateLineNumbers();
     }
 
     addMessage(typeM, titleM, textM, timeM) {
@@ -2023,41 +2122,6 @@ class CrudComponent extends HTMLElement {
         if(this.getData() != null && newValue != null) {
             this.init();
         }
-    }
-
-    // Getters and Setters
-
-    setAttr(name, value) {
-        this.attr[name] = value;
-    }
-
-    getAttr(name) {
-        return this.attr[name];
-    }
-
-    getData() {
-        return this.getAttr("data");
-    }
-
-    getValues() {
-        return this.getData().values;
-    }
-
-    getLang() {
-        return this.getAttr("lang");
-    }
-
-    getUrl() {
-        return this.getAttr("url");
-    }
-
-    isEditable() {
-        return this.getAttr("saveButton") != null;
-    }
-
-    setChild(child) {
-        this.resetDisplay();
-        this.appendChild(child);
     }
 
     // Function wrappers

@@ -20,7 +20,7 @@
  * ------------------------------------------------------------------------
  */
 
-import { createElement, resetElementHTML } from "./utils.js";
+import { createElement, resetElementHTML, isHidden, hide, display } from "./utils.js";
 import { langExist, text, DEFAULT_LANG } from "./lang.js";
 import CrudTable from "./crudTable.js";
 import CrudRequest from "./crudRequest.js";
@@ -48,6 +48,8 @@ class CrudComponent extends HTMLElement {
         const lang = this.getAttribute("lang");
         const url = this.getAttribute("url");
         const saveButtonId = this.getAttribute("save-button");
+        const filterId = this.getAttribute("filter");
+        const filtersClass = this.getAttribute("filters");
 
         this.resetDisplay();
 
@@ -98,6 +100,45 @@ class CrudComponent extends HTMLElement {
             }
         }
 
+        if(filterId != null || filtersClass != null) {
+            this.setAttr("filters", []);
+            if(filterId != null) {
+                const filter = document.getElementById(filterId);
+                if(filter != null) {
+                    this.getAttr("filters").push(filter);
+                } else {
+                    settingsOk = false;
+                }
+            }
+            if(filtersClass != null) {
+                const filters = document.getElementsByClassName(filtersClass);
+                if(filters != null && filters.length > 0) {
+                    for(const filter of filters) {
+                        this.getAttr("filters").push(filter);
+                    }
+                } else {
+                    settingsOk = false;
+                }
+            }
+            const self = this;
+            const filterOnInputFunc = function() {
+                for(const filter of self.getAttr("filters")) {
+                    if(filter != this) {
+                        filter.value = this.value;
+                    }
+                }
+                self.filter(this.value);
+            };
+            const filterOnFocusFunc = function() {
+                self.filter(this.value);
+            };
+            for(const filter of this.getAttr("filters")) {
+                filter.value = "";
+                filter.oninput = filterOnInputFunc;
+                filter.onfocus = filterOnFocusFunc;
+            }
+        }
+
         this.setAttr("loadElement", createElement("<h1 class=\"text-info\"><i class=\"fas fa-spinner fa-pulse\"></i></h1>"));
         this.setAttr("errorElement", createElement(`
             <div class="alert alert-warning" role="alert">
@@ -127,6 +168,41 @@ class CrudComponent extends HTMLElement {
 
     }
 
+    // Getters and Setters
+
+    setAttr(name, value) {
+        this.attr[name] = value;
+    }
+
+    getAttr(name) {
+        return this.attr[name];
+    }
+
+    getData() {
+        return this.getAttr("data");
+    }
+
+    getValues() {
+        return this.getData().values;
+    }
+
+    getLang() {
+        return this.getAttr("lang");
+    }
+
+    getUrl() {
+        return this.getAttr("url");
+    }
+
+    isEditable() {
+        return this.getAttr("saveButton") != null;
+    }
+
+    setChild(child) {
+        this.resetDisplay();
+        this.appendChild(child);
+    }
+
     // Requests
 
     load() {
@@ -153,6 +229,21 @@ class CrudComponent extends HTMLElement {
 
     text(strRequest) {
         return text(this.getLang(), strRequest);
+    }
+
+    filter(filterValue) {
+        for(const line of this.getElementsByClassName("crudjs-edit-line")) {
+            if(line.textContent.toLowerCase().includes(filterValue.toLowerCase())) {
+                if(isHidden(line)) {
+                    display(line);
+                }
+            } else {
+                if(!isHidden(line)) {
+                    hide(line);
+                }
+            }
+        }
+        this.getAttr("table").updateLineNumbers();
     }
 
     addMessage(typeM, titleM, textM, timeM) {
@@ -216,41 +307,6 @@ class CrudComponent extends HTMLElement {
         if(this.getData() != null && newValue != null) {
             this.init();
         }
-    }
-
-    // Getters and Setters
-
-    setAttr(name, value) {
-        this.attr[name] = value;
-    }
-
-    getAttr(name) {
-        return this.attr[name];
-    }
-
-    getData() {
-        return this.getAttr("data");
-    }
-
-    getValues() {
-        return this.getData().values;
-    }
-
-    getLang() {
-        return this.getAttr("lang");
-    }
-
-    getUrl() {
-        return this.getAttr("url");
-    }
-
-    isEditable() {
-        return this.getAttr("saveButton") != null;
-    }
-
-    setChild(child) {
-        this.resetDisplay();
-        this.appendChild(child);
     }
 
     // Function wrappers

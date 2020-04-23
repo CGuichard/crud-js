@@ -78,17 +78,17 @@ class AddCrudLine extends CrudLine {
     addEvent() {
         const crud = this.crudTable.crud;
         const errorMessages = [];
-        for (let i = 0; i < this.values.length; i++) {
+        for(let i = 0; i < this.values.length; i++) {
             if(!this.fields[i].isValid()) {
                 errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
             }
         }
         if(errorMessages != null && errorMessages.length > 0) {
-            for (const errorMsg of errorMessages) {
+            for(const errorMsg of errorMessages) {
                 crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
             }
         } else {
-            for (let i = 0; i < this.values.length; i++) {
+            for(let i = 0; i < this.values.length; i++) {
                 this.values[i] = this.fields[i].validate();
             }
             const values = this.values;

@@ -115,12 +115,12 @@ There are multiple ways to get CrudJS on your page.
 
 - **[Release]** Add the following link and replace _:version_ with the version you want to use (example: 'v0', 'v0.0.1', etc... versions are [here](https://github.com/CGuichard/crud-js/tags)):
   ```html
-  <script src="https://raw.githack.com/CGuichard/crud-js/:version/dist/crudjs.min.js"></script>
+  <script src="https://raw.githack.com/cguichard/crud-js/:version/dist/crudjs.min.js"></script>
   ```
 
 - **[Latest]** Add the following link to get the latest version built from master:
   ```html
-  <script src="https://raw.githack.com/CGuichard/crud-js/latest/dist/crudjs.min.js"></script>
+  <script src="https://raw.githack.com/cguichard/crud-js/latest/dist/crudjs.min.js"></script>
   ```
 
 ###### <a name="installation-for-use-local-file"></a> Experimental
@@ -334,7 +334,7 @@ Development feature not documented for the moment.
 
 ### Filter
 
-// TODO
+Development feature not documented for the moment.
 
 ### Validators
 

@@ -102,7 +102,7 @@ class SelectChipsCrudField extends CrudField {
      * @protected
      */
     _buildDisplayView() {
-        for (const val of this.value) {
+        for(const val of this.value) {
             this.element.innerHTML = this.element.innerHTML.concat(`<span style="font-size:0.9rem;" class="badge badge-pill badge-secondary mt-1 mr-1 pb-2 pt-2">${val}</span>`);
         }
     }
@@ -131,7 +131,7 @@ class SelectChipsCrudField extends CrudField {
         };
         this.element.appendChild(selectChips);
         // Create chips
-        for (const value of fieldValue) {
+        for(const value of fieldValue) {
             this.element.appendChild(SelectChipsCrudField.createSelectChips(value));
         }
     }

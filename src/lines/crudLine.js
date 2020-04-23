@@ -21,7 +21,7 @@
  * ------------------------------------------------------------------------
  */
 
-import { resetElementHTML } from "../utils.js";
+import { resetElementHTML, hide } from "../utils.js";
 import { CrudFieldFactory } from "./fields/crudFieldFactory.js";
 
 /**
@@ -140,7 +140,7 @@ class CrudLine {
     /* Show methods */
 
     hide() {
-        this.element.style.display = "none";
+        hide(this.element);
     }
 
     remove() {
@@ -155,7 +155,7 @@ class CrudLine {
     }
 
     _update() {
-        for (let i = 0; i < this.values.length; i++) {
+        for(let i = 0; i < this.values.length; i++) {
             this.fields[i].value = this.values[i];
             this.fields[i].update();
         }
