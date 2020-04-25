@@ -84,17 +84,33 @@ class IntCrudField extends CrudField {
      * @protected
      */
     _buildEditView() {
-        this.element.innerHTML = `<input type="number" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${this.value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:auto !importan;">`;
+        this.element.innerHTML = `<input type="number" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${this.value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:60px;">`;
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {int}    newValue       - New value after edition.
+     * @param   {object} validators     - Validators object.
+     * @param   {number} validators.min - Minimum of the int field.
+     * @param   {number} validators.max - Maximum of the int field.
      * @returns {boolean}
      */
-    isValid() {
-        const newValue = this.newValue;
-        return newValue != null && Number.isInteger(newValue);
+    _checkValidators(newValue, validators) {
+        return !(
+            validators.min != null && newValue < validators.min ||
+            validators.max != null && newValue > validators.max
+        );
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {int} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return Number.isInteger(newValue);
     }
 
 }

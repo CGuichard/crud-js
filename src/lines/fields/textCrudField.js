@@ -87,13 +87,31 @@ class TextCrudField extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {string} newValue             - New value after edition.
+     * @param   {object} validators           - Validators object.
+     * @param   {number} validators.regex     - Regex for the text field.
+     * @param   {number} validators.minLength - Minimum length of the text field.
+     * @param   {number} validators.maxLength - Maximum length of the text field.
      * @returns {boolean}
      */
-    isValid() {
-        const newValue = this.newValue;
-        return newValue != null && typeof newValue === "string";
+    _checkValidators(newValue, validators) {
+        return !(
+            validators.regex != null && !(new RegExp(validators.regex).test(newValue)) ||
+            validators.minLength != null && newValue.length < validators.minLength ||
+            validators.maxLength != null && newValue.length > validators.maxLength
+        );
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {string} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return typeof newValue === "string";
     }
 
 }

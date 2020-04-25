@@ -2,7 +2,7 @@
  * @file module to send and retrieve values for crudjs
  *
  * @author Kévin Delcourt
- * @version 0.0.2
+ * @version 1.0.0
  * @since 0.0.1
  *
  */
@@ -118,7 +118,7 @@ class CrudRequest {
             case "NEW":
                 action.result.forEach(function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -130,7 +130,7 @@ class CrudRequest {
             case "MODIFIED":
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.old_values[i].join(', ')}' / '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.old_values[i].join(', ')}' / '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -143,7 +143,7 @@ class CrudRequest {
                 let valuesToDelete = [];
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 20000);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 15000);
                         self.noError = false;
                     } else {
                         const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));

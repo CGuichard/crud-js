@@ -2,7 +2,8 @@
  * @file This file contains the CrudTable object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
+ * @since 0.0.1
  *
  */
 

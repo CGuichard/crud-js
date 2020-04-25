@@ -3,7 +3,6 @@
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
  * @version 1.0.0
- * @since 0.0.1
  *
  */
 
@@ -56,6 +55,10 @@ class CrudLine {
     }
 
     constructor(crudTable, lineArray) {
+        /* Ensure non-instantiation. */
+        if(new.target === CrudLine) {
+            throw new TypeError("Cannot construct CrudLine instance directly");
+        }
         this._crudTable = crudTable;
         this._element = document.createElement("tr");
         this._columns = this._crudTable.crud.getData().columns;
@@ -95,8 +98,9 @@ class CrudLine {
     }
 
     set values(val) {
-        if(val.length == this.values.length)
+        if(val.length == this.values.length) {
             this._values = val;
+        }
     }
 
     set status(val) {

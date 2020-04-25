@@ -2,7 +2,7 @@
  * @file This file contains CrudJS languages.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
  *
  */
 

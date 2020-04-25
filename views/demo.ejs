@@ -112,9 +112,12 @@
                 this.element.innerHTML = `<input type="email" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0) !important;width:auto !important;">`;
             }
 
-            EmailField.prototype.isValid = function() {
-                var newValue = this.getNewValue();
-                return newValue != null && typeof newValue === "string" && validateEmail(newValue);
+            EmailField.prototype.checkValidators = function(newValue, validators) {
+                return (validators.domain != null && newValue.endsWith(validators.domain));
+            }
+
+            EmailField.prototype.checkField = function(newValue) {
+                return typeof newValue === "string" && validateEmail(newValue);
             }
 
             var CUSTOM_FIELDS = {
