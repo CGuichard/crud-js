@@ -39,11 +39,11 @@ class SelectCrudField extends CrudField {
      * Creates a SelectCrudField.
      *
      * @constructor
-     * @param {(Array.<number>|Array.<string>)} value      - The value of the field.
-     * @param {object}                          columnDesc - The back-end description
-     *                                                       of the field column.
-     * @param {CrudComponent}                   crud       - The CrudComponent which contains
-     *                                                       the field.
+     * @param {*}             value      - The value of the field.
+     * @param {object}        columnDesc - The back-end description
+     *                                     of the field column.
+     * @param {CrudComponent} crud       - The CrudComponent which contains
+     *                                     the field.
      */
     constructor(value, columnDesc, crud) {
         super(value, columnDesc, crud);
@@ -52,16 +52,16 @@ class SelectCrudField extends CrudField {
     /**
      * Gets the default value when actual value is undefined or null.
      *
-     * @returns {(Array.<number>|Array.<string>)} Default value.
+     * @returns {string} Default value.
      */
     get defaultValue() {
-        return [];
+        return "";
     }
 
     /**
      * Gets the new value of the field after editing.
      *
-     * @returns {(Array.<number>|Array.<string>)} New value.
+     * @returns {string} New value.
      */
     get newValue() {
         if(this.edit) {
@@ -86,7 +86,7 @@ class SelectCrudField extends CrudField {
      */
     _buildEditView() {
         const fieldValue = this.value;
-        let selectHTML = "<select class=\"custom-select\">";
+        let selectHTML = `<select class="custom-select">`;
         for(const choice of this.columnDesc.options.values) {
             selectHTML = selectHTML.concat(`<option value="${choice}" ${((choice===fieldValue)?"selected":"")}>${choice}</option>`);
         }
@@ -95,12 +95,24 @@ class SelectCrudField extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {string} newValue   - New value after edition.
+     * @param   {object} validators - Validators object.
      * @returns {boolean}
      */
-    isValid() {
-        return this.newValue != null;
+    _checkValidators(newValue, validators) {
+        return true;
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {string} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return this.columnDesc.options.values.includes(newValue);
     }
 
 }

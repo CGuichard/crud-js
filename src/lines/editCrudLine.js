@@ -126,12 +126,13 @@ class EditCrudLine extends CrudLine {
         const errorMessages = [];
         for(let i = 0; i < this.values.length; i++) {
             if(!this.fields[i].isValid()) {
-                errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
+                const helpText = this.fields[i].helpText;
+                errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'${(helpText.length>0)?` − ${helpText}`:""}`);
             }
         }
         if(errorMessages  != null && errorMessages.length > 0) {
             for(const errorMsg of errorMessages) {
-                this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 15000);
+                this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 10000);
             }
         } else {
             for(let i = 0; i < this.values.length; i++) {

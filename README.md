@@ -324,19 +324,29 @@ In each action, a field _result_ appeared just like previously, each item of the
 
 ### General options
 
-#### Add custom delete message
+#### Custom delete message
 
 Development feature not documented for the moment.
 
-#### Add examples
+#### Examples
 
 // TODO
 
-### Filter
+### Column options
+
+#### Filters
 
 Development feature not documented for the moment.
 
-### Validators
+#### Validators
+
+Development feature not documented for the moment.
+
+#### Help text
+
+Development feature not documented for the moment.
+
+#### Default values
 
 // TODO
 

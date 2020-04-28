@@ -2,7 +2,8 @@
  * @file This file contains the CrudJS webcomponent.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
+ * @since 0.0.1
  *
  */
 
@@ -248,7 +249,7 @@ class CrudComponent extends HTMLElement {
 
     addMessage(typeM, titleM, textM, timeM) {
         if(timeM == undefined) {
-            timeM = 60000;
+            timeM = 20000;
         }
         const toast = createElement(`
             <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">

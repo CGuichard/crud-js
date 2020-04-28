@@ -32,43 +32,66 @@ app.get('/demo', function(req, res) {
 
 app.get('/demo/data', function(req, res) {
     var json = {
-        "columns": [
+        columns: [
             {
-                "name": "Name",
-                "type": "text",
-                "options": {}
-            },
-            {
-                "name": "Mail",
-                "type": "email",
-                "options": {}
-            },
-            {
-                "name": "Age",
-                "type": "int",
-                "options": {}
-            },
-            {
-                "name": "Gender",
-                "type": "select",
-                "options": {
-                    "values": ["Men", "Women", "Other"]
+                name: "Name",
+                type: "text",
+                options: {
+                    helpText: "The name needs to have between 1 and 50 characters and composed of only alphabetic letters without accentuation. Space and hyphen authorized.",
+                    validators: {
+                        minLength: 1,
+                        maxLength: 50,
+                        regex: "^[A-Za-z-\ ]*$"
+                    }
                 }
             },
             {
-                "name": "Busy day",
-                "type": "select-chips",
-                "options": {
-                    "values": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                name: "Mail",
+                type: "email",
+                options: {
+                    helpText: "The email needs to end with \".com\".",
+                    validators: {
+                        "domain": ".com"
+                    }
+                }
+            },
+            {
+                name: "Age",
+                type: "int",
+                options: {
+                    helpText: "The age needs to be between 1 and 120.",
+                    validators: {
+                        min: 1,
+                        max: 120
+                    }
+                }
+            },
+            {
+                name: "Gender",
+                type: "select",
+                options: {
+                    values: ["Men", "Women", "Other"]
+                }
+            },
+            {
+                name: "Busy day",
+                type: "select-chips",
+                options: {
+                    helpText: "You'll need to select between 1 and 5 elements.",
+                    values: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                    validators: {
+                        minSelect: 1,
+                        maxSelect: 5
+                    }
                 }
             }
         ],
-        "values": [
+        values: [
             ["Thomas", "thomas@example.com", 16, "Men", ["Monday", "Tuesday", "Wednesday"]],
             ["Giovanni", "giovanni@example.com", 54, "Women", ["Thursday", "Friday"]],
-            ["Super Cookie", "super-cookie@example.com", 1, "Other", []]
+            ["Super Cookie", "super-cookie@example.com", 1, "Other", ["Saturday"]]
         ],
-        "options": {
+        options: {
             deleteMessage: "You want to delete this line? Sure at 100%?"
         }
     };

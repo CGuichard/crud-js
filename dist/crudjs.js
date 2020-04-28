@@ -2,7 +2,8 @@
  * @file This file contains some basic function used in the project.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
+ * @since 0.0.1
  *
  */
 
@@ -20,24 +21,39 @@
  * ------------------------------------------------------------------------
  */
 
+/**
+ * @since 0.0.1
+ */
 function createElement(htmlString) {
     const div = document.createElement('div');
     div.innerHTML = htmlString.trim();
     return div.firstChild;
 }
 
+/**
+ * @since 0.0.1
+ */
 function resetElementHTML(htmlElement) {
     htmlElement.innerHTML = "";
 }
 
+/**
+ * @since 0.0.1
+ */
 function isHidden(element) {
     return element.style.display === "none";
 }
 
+/**
+ * @since 1.0.0
+ */
 function hide(element) {
     element.style.display = "none";
 }
 
+/**
+ * @since 1.0.0
+ */
 function display(element) {
     element.style.display = "";
 }
@@ -46,7 +62,7 @@ function display(element) {
  * @file This file contains CrudJS languages.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
  *
  */
 
@@ -267,33 +283,42 @@ class CrudField {
     constructor(value, columnDesc, crud) {
         /* Ensure non-instantiation. */
         if(new.target === CrudField) {
-            throw new TypeError("Cannot construct CrudField instances directly");
+            throw new TypeError("Cannot construct CrudField instance directly");
         }
-        /**
-         * The CrudField value member.
-         *
-         * @protected
-         * @type {*}
-         */
-        this._value = value;
-        /**
-         * The CrudField value member.
-         *
-         * @protected
-         * @type {object}
-         * @property {string}         name             - The column name.
-         * @property {string}         type             - The column type.
-         * @property {object}         [options]        - The column options.
-         * @property {Array.<object>} [options.values] - The column possible values.
-         */
-        this._columnDesc = columnDesc;
-        /**
-         * The CrudComponent which contains the field.
-         *
-         * @protected
-         * @type {CrudComponent}
-         */
-        this._crud = crud;
+        if(arguments.length > 0) {
+            /**
+            * The CrudField value member.
+            *
+            * @protected
+            * @type {*}
+            */
+            this._value = value;
+            /**
+            * The CrudField value member.
+            *
+            * @protected
+            * @type {object}
+            * @property {string}         name             - The column name.
+            * @property {string}         type             - The column type.
+            * @property {object}         [options]        - The column options.
+            * @property {Array.<object>} [options.values] - The column possible values.
+            */
+            this._columnDesc = columnDesc;
+            /**
+            * The CrudComponent which contains the field.
+            *
+            * @protected
+            * @type {CrudComponent}
+            */
+            this._crud = crud;
+            /**
+            * The CrudField value member.
+            *
+            * @protected
+            * @type {HTMLElement}
+            */
+            this._element = CrudField.createElement();
+        }
         /**
          * The CrudField value member.
          *
@@ -301,13 +326,6 @@ class CrudField {
          * @type {number}
          */
         this._state = FIELD_STATE.VIEW;
-        /**
-         * The CrudField value member.
-         *
-         * @protected
-         * @type {HTMLElement}
-         */
-        this._element = CrudField.createElement();
     }
 
     /* Getters & Setters */
@@ -328,6 +346,15 @@ class CrudField {
      */
     get columnDesc() {
         return this._columnDesc;
+    }
+
+    /**
+     * Accessor of CrudField help text.
+     *
+     * @readonly
+     */
+    get helpText() {
+        return (this.columnDesc.options != null && this.columnDesc.options.helpText != null && typeof this.columnDesc.options.helpText === "string") ? this.columnDesc.options.helpText : "";
     }
 
     /**
@@ -379,9 +406,15 @@ class CrudField {
         resetElementHTML(this.element);
         switch(this.state) {
             case FIELD_STATE.VIEW:
+                if(this.element.getAttribute("title") != "") {
+                    this.element.setAttribute("title", "");
+                }
                 this._buildDisplayView();
                 break;
             case FIELD_STATE.EDIT:
+                if(this.helpText.length > 0) {
+                    this.element.setAttribute("title", this.helpText);
+                }
                 this._buildEditView();
                 break;
         }
@@ -410,7 +443,43 @@ class CrudField {
         return this.value;
     }
 
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @returns {boolean}
+     */
+    isValid() {
+        const newValue = this.newValue;
+        if(newValue != null) {
+            return this._checkField(newValue) && ((this.columnDesc.options != null && this.columnDesc.options.validators != null) ? this._checkValidators(newValue, this.columnDesc.options.validators) : true);
+        }
+        return false;
+    }
+
     /* Abstract methods */
+
+    /**
+     * Returns true if the validators are valid, else false. Called only when validators exists.
+     *
+     * @abstract
+     * @param   {*}      newValue   - New value after edition.
+     * @param   {object} validators - Validators object.
+     * @returns {boolean}
+     */
+    _checkValidators(newValue, validators) {
+        throw new Error("Method not implemented");
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @abstract
+     * @param   {*} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        throw new Error("Method not implemented");
+    }
 
     /**
      * Returns the default value when actual value is undefined or null.
@@ -449,16 +518,6 @@ class CrudField {
      * @abstract
      */
     _buildEditView() {
-        throw new Error("Method not implemented");
-    }
-
-    /**
-     * Returns true if the new value after edition is valid, else false.
-     *
-     * @abstract
-     * @returns {boolean}
-     */
-    isValid() {
         throw new Error("Method not implemented");
     }
 
@@ -503,8 +562,10 @@ class CrudFieldDecorator extends CrudField {
      *                                                         that build its display view.
      * @param {function}    customCrudField.buildEditView    - Function of the custom field object
      *                                                         that build its edit view.
-     * @param {function}    customCrudField.isValid          - Function of the custom field object
-     *                                                         that check if its value is validated.
+     * @param {function}    customCrudField.checkField       - Function of the custom field object
+     *                                                         that check if its value is valid.
+     * @param {function}    customCrudField.checkValidators  - Function of the custom field object
+     *                                                         that check if its validators are valid.
      */
     constructor(customCrudField) {
         super();
@@ -524,12 +585,14 @@ class CrudFieldDecorator extends CrudField {
          *                                            that build its display view.
          * @property {function}    buildEditView    - Function of the custom field object
          *                                            that build its edit view.
-         * @property {function}    isValid          - Function of the custom field object
-         *                                            that check if its value is validated.
+         * @property {function}    checkField       - Function of the custom field object
+         *                                            that check if its value is valid.
+         * @property {function}    checkValidators  - Function of the custom field object
+         *                                            that check if its validators are valid.
          */
         this.__customCrudField = customCrudField;
-        if(!this.__customCrudField.element.className.includes(FIELD_CSS_CLASS)) {
-            this.__customCrudField.element.className += ` ${FIELD_CSS_CLASS}`;
+        if(!this.element.className.includes(FIELD_CSS_CLASS)) {
+            this.element.className += ` ${FIELD_CSS_CLASS}`;
         }
     }
 
@@ -604,12 +667,27 @@ class CrudFieldDecorator extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {*}      newValue   - New value after edition.
+     * @param   {object} validators - Validators object.
      * @returns {boolean}
      */
-    isValid() {
-        return this.__customCrudField.isValid();
+    _checkValidators(newValue, validators) {
+        if(this.__customCrudField.checkValidators != null) {
+            return  this.__customCrudField.checkValidators(newValue, validators);
+        }
+        throw new Error("Custom field need checkValidators function");
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {*} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return this.__customCrudField.checkField(newValue);
     }
 
 }
@@ -684,17 +762,33 @@ class IntCrudField extends CrudField {
      * @protected
      */
     _buildEditView() {
-        this.element.innerHTML = `<input type="number" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${this.value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:auto !importan;">`;
+        this.element.innerHTML = `<input type="number" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${this.value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:60px;">`;
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {int}    newValue       - New value after edition.
+     * @param   {object} validators     - Validators object.
+     * @param   {number} validators.min - Minimum of the int field.
+     * @param   {number} validators.max - Maximum of the int field.
      * @returns {boolean}
      */
-    isValid() {
-        const newValue = this.newValue;
-        return newValue != null && Number.isInteger(newValue);
+    _checkValidators(newValue, validators) {
+        return !(
+            validators.min != null && newValue < validators.min ||
+            validators.max != null && newValue > validators.max
+        );
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {int} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return Number.isInteger(newValue);
     }
 
 }
@@ -772,13 +866,31 @@ class TextCrudField extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {string} newValue             - New value after edition.
+     * @param   {object} validators           - Validators object.
+     * @param   {number} validators.regex     - Regex for the text field.
+     * @param   {number} validators.minLength - Minimum length of the text field.
+     * @param   {number} validators.maxLength - Maximum length of the text field.
      * @returns {boolean}
      */
-    isValid() {
-        const newValue = this.newValue;
-        return newValue != null && typeof newValue === "string";
+    _checkValidators(newValue, validators) {
+        return !(
+            validators.regex != null && !(new RegExp(validators.regex).test(newValue)) ||
+            validators.minLength != null && newValue.length < validators.minLength ||
+            validators.maxLength != null && newValue.length > validators.maxLength
+        );
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {string} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return typeof newValue === "string";
     }
 
 }
@@ -808,11 +920,11 @@ class SelectCrudField extends CrudField {
      * Creates a SelectCrudField.
      *
      * @constructor
-     * @param {(Array.<number>|Array.<string>)} value      - The value of the field.
-     * @param {object}                          columnDesc - The back-end description
-     *                                                       of the field column.
-     * @param {CrudComponent}                   crud       - The CrudComponent which contains
-     *                                                       the field.
+     * @param {*}             value      - The value of the field.
+     * @param {object}        columnDesc - The back-end description
+     *                                     of the field column.
+     * @param {CrudComponent} crud       - The CrudComponent which contains
+     *                                     the field.
      */
     constructor(value, columnDesc, crud) {
         super(value, columnDesc, crud);
@@ -821,16 +933,16 @@ class SelectCrudField extends CrudField {
     /**
      * Gets the default value when actual value is undefined or null.
      *
-     * @returns {(Array.<number>|Array.<string>)} Default value.
+     * @returns {string} Default value.
      */
     get defaultValue() {
-        return [];
+        return "";
     }
 
     /**
      * Gets the new value of the field after editing.
      *
-     * @returns {(Array.<number>|Array.<string>)} New value.
+     * @returns {string} New value.
      */
     get newValue() {
         if(this.edit) {
@@ -855,7 +967,7 @@ class SelectCrudField extends CrudField {
      */
     _buildEditView() {
         const fieldValue = this.value;
-        let selectHTML = "<select class=\"custom-select\">";
+        let selectHTML = `<select class="custom-select">`;
         for(const choice of this.columnDesc.options.values) {
             selectHTML = selectHTML.concat(`<option value="${choice}" ${((choice===fieldValue)?"selected":"")}>${choice}</option>`);
         }
@@ -864,12 +976,24 @@ class SelectCrudField extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {string} newValue   - New value after edition.
+     * @param   {object} validators - Validators object.
      * @returns {boolean}
      */
-    isValid() {
-        return this.newValue != null;
+    _checkValidators(newValue, validators) {
+        return true;
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {string} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return this.columnDesc.options.values.includes(newValue);
     }
 
 }
@@ -920,11 +1044,11 @@ class SelectChipsCrudField extends CrudField {
      * Creates a SelectChipsCrudField.
      *
      * @constructor
-     * @param {(Array.<number>|Array.<string>)} value      - The value of the field.
-     * @param {object}                          columnDesc - The back-end description
-     *                                                       of the field column.
-     * @param {CrudComponent}                   crud       - The CrudComponent which contains
-     *                                                       the field.
+     * @param {(Array.<string>)} value      - The value of the field.
+     * @param {object}           columnDesc - The back-end description
+     *                                        of the field column.
+     * @param {CrudComponent}    crud       - The CrudComponent which contains
+     *                                        the field.
      */
     constructor(value, columnDesc, crud) {
         super(value, columnDesc, crud);
@@ -933,7 +1057,7 @@ class SelectChipsCrudField extends CrudField {
     /**
      * Gets the default value when actual value is undefined or null.
      *
-     * @returns {(Array.<number>|Array.<string>)} Default value.
+     * @returns {(Array.<string>)} Default value.
      */
     get defaultValue() {
         return [];
@@ -942,7 +1066,7 @@ class SelectChipsCrudField extends CrudField {
     /**
      * Gets the new value of the field after editing.
      *
-     * @returns {(Array.<number>|Array.<string>)} New value.
+     * @returns {(Array.<string>)} New value.
      */
     get newValue() {
         if(this.edit) {
@@ -976,7 +1100,7 @@ class SelectChipsCrudField extends CrudField {
         const options = this.columnDesc.options.values.filter(x => !(fieldValue.includes(x)));
         // Create select
         const selectChips = document.createElement("select");
-        selectChips.setAttribute("style", "width:auto !important");
+        selectChips.setAttribute("style", "width:auto !important;");
         selectChips.setAttribute("class", "custom-select mr-2");
         selectChips.appendChild(createElement(`<option>${this.crud.text("field.selectChips.select")}</option>`));
         for(const choice of options) {
@@ -996,13 +1120,31 @@ class SelectChipsCrudField extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {(Array.<string>)} newValue             - New value after edition.
+     * @param   {object}           validators           - Validators object.
+     * @param   {number}           validators.minSelect - Minimum number of selected element
+     *                                                    for the select chips field.
+     * @param   {number}           validators.maxSelect - Maximum number of selected element
+     *                                                    for the select chips field.
      * @returns {boolean}
      */
-    isValid() {
-        const newValue = this.newValue;
-        return newValue != null && Array.isArray(newValue);
+    _checkValidators(newValue, validators) {
+        return !(
+            validators.minSelect != null && newValue.length < validators.minSelect ||
+            validators.maxSelect != null && newValue.length > validators.maxSelect
+        );
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {(Array.<string>)} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return Array.isArray(newValue) && newValue.every((val) => this.columnDesc.options.values.includes(val));
     }
 
 }
@@ -1099,7 +1241,6 @@ class CrudFieldFactory {
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
  * @version 1.0.0
- * @since 0.0.1
  *
  */
 
@@ -1135,6 +1276,10 @@ class CrudLine {
     }
 
     constructor(crudTable, lineArray) {
+        /* Ensure non-instantiation. */
+        if(new.target === CrudLine) {
+            throw new TypeError("Cannot construct CrudLine instance directly");
+        }
         this._crudTable = crudTable;
         this._element = document.createElement("tr");
         this._columns = this._crudTable.crud.getData().columns;
@@ -1174,8 +1319,9 @@ class CrudLine {
     }
 
     set values(val) {
-        if(val.length == this.values.length)
+        if(val.length == this.values.length) {
             this._values = val;
+        }
     }
 
     set status(val) {
@@ -1381,12 +1527,13 @@ class EditCrudLine extends CrudLine {
         const errorMessages = [];
         for(let i = 0; i < this.values.length; i++) {
             if(!this.fields[i].isValid()) {
-                errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
+                const helpText = this.fields[i].helpText;
+                errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'${(helpText.length>0)?` − ${helpText}`:""}`);
             }
         }
         if(errorMessages  != null && errorMessages.length > 0) {
             for(const errorMsg of errorMessages) {
-                this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 15000);
+                this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 10000);
             }
         } else {
             for(let i = 0; i < this.values.length; i++) {
@@ -1471,24 +1618,22 @@ class AddCrudLine extends CrudLine {
     }
 
     addEvent() {
-        const crud = this.crudTable.crud;
         const errorMessages = [];
         for(let i = 0; i < this.values.length; i++) {
             if(!this.fields[i].isValid()) {
-                errorMessages.push(`${crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'`);
+                const helpText = this.fields[i].helpText;
+                errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'${(helpText.length>0)?` − ${helpText}`:""}`);
             }
         }
         if(errorMessages != null && errorMessages.length > 0) {
             for(const errorMsg of errorMessages) {
-                crud.addMessage("warning", crud.text("basic.warning"), errorMsg, 15000);
+                this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 10000);
             }
         } else {
             for(let i = 0; i < this.values.length; i++) {
                 this.values[i] = this.fields[i].validate();
             }
-            const values = this.values;
-            crud.getData().values.push(values);
-            this.crudTable.addCrudLine(new EditCrudLine(this.crudTable, values));
+            this.crudTable.appendNewEditCrudLine(new EditCrudLine(this.crudTable, this.values));
             this._reset();
             this.crudTable.updateLineNumbers();
         }
@@ -1500,7 +1645,8 @@ class AddCrudLine extends CrudLine {
  * @file This file contains the CrudTable object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
+ * @since 0.0.1
  *
  */
 
@@ -1514,6 +1660,7 @@ class CrudTable {
 
     constructor(crud) {
         this.crud = crud;
+        this.horizontalScroll = false;
         this.element = createElement("<div class=\"table-responsive\"></div>");
         this.element.innerHTML = `
         <table class="table">
@@ -1538,6 +1685,7 @@ class CrudTable {
         this.renderLines();
         this.renderModal();
         this.updateLineNumbers();
+        this.addEvents();
     }
 
     resetTable() {
@@ -1564,11 +1712,11 @@ class CrudTable {
 
     renderLines() {
         if(this.getCrud().isEditable()) {
-            this.addCrudLine(new AddCrudLine(this));
+            this.appendCrudLine(new AddCrudLine(this));
         }
         const values = this.crud.getData().values;
         for(var i = 0; i < values.length; i++) {
-            this.addCrudLine(new EditCrudLine(this, values[i]));
+            this.appendCrudLine(new EditCrudLine(this, values[i]));
         }
     }
 
@@ -1588,9 +1736,36 @@ class CrudTable {
         }
     }
 
-    addCrudLine(crudLine) {
-        crudLine.show();
+    addEvents() {
+        const self = this;
+        this.element.onmousedown = function() {
+            self.horizontalScroll = this.clientWidth < this.children[0].clientWidth;
+        };
+        this.element.onmouseup = function() {
+            self.horizontalScroll = false;
+        };
+        this.element.addEventListener("wheel", function(event) {
+            if(event.type == 'wheel' && self.horizontalScroll) {
+                this.scrollLeft -= ((((event.deltaY || -event.wheelDelta || event.detail) >> 10) || 1) * -50);
+                event.preventDefault();
+            }
+        });
+    }
+
+    appendCrudLine(crudLine) {
         this.tbody.appendChild(crudLine.element);
+        crudLine.show();
+    }
+
+    appendNewEditCrudLine(editCrudLine) {
+        this.crud.getData().values.push(editCrudLine.values);
+        const editLines = this.tbody.getElementsByClassName('crudjs-edit-line');
+        if(editLines.length > 0) {
+            this.tbody.insertBefore(editCrudLine.element, editLines[0]);
+        } else {
+            this.tbody.appendChild(editCrudLine.element);
+        }
+        editCrudLine.show();
     }
 
     disableButtons() {
@@ -1675,7 +1850,7 @@ CrudTable.ID = 0;
  * @file module to send and retrieve values for crudjs
  *
  * @author Kévin Delcourt
- * @version 0.0.2
+ * @version 1.0.0
  * @since 0.0.1
  *
  */
@@ -1791,7 +1966,7 @@ class CrudRequest {
             case "NEW":
                 action.result.forEach(function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -1803,7 +1978,7 @@ class CrudRequest {
             case "MODIFIED":
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.old_values[i].join(', ')}' / '${action.new_values[i].join(', ')}' − ${val[1]}`, 20000);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.old_values[i].join(', ')}' / '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
                         self.noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
@@ -1816,7 +1991,7 @@ class CrudRequest {
                 let valuesToDelete = [];
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
-                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 20000);
+                        self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 15000);
                         self.noError = false;
                     } else {
                         const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));
@@ -1836,7 +2011,8 @@ class CrudRequest {
  * @file This file contains the CrudJS webcomponent.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
- * @version 0.0.1
+ * @version 1.0.0
+ * @since 0.0.1
  *
  */
 
@@ -2063,7 +2239,7 @@ class CrudComponent extends HTMLElement {
 
     addMessage(typeM, titleM, textM, timeM) {
         if(timeM == undefined) {
-            timeM = 60000;
+            timeM = 20000;
         }
         const toast = createElement(`
             <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">

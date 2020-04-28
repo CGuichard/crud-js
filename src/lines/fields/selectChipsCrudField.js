@@ -61,11 +61,11 @@ class SelectChipsCrudField extends CrudField {
      * Creates a SelectChipsCrudField.
      *
      * @constructor
-     * @param {(Array.<number>|Array.<string>)} value      - The value of the field.
-     * @param {object}                          columnDesc - The back-end description
-     *                                                       of the field column.
-     * @param {CrudComponent}                   crud       - The CrudComponent which contains
-     *                                                       the field.
+     * @param {(Array.<string>)} value      - The value of the field.
+     * @param {object}           columnDesc - The back-end description
+     *                                        of the field column.
+     * @param {CrudComponent}    crud       - The CrudComponent which contains
+     *                                        the field.
      */
     constructor(value, columnDesc, crud) {
         super(value, columnDesc, crud);
@@ -74,7 +74,7 @@ class SelectChipsCrudField extends CrudField {
     /**
      * Gets the default value when actual value is undefined or null.
      *
-     * @returns {(Array.<number>|Array.<string>)} Default value.
+     * @returns {(Array.<string>)} Default value.
      */
     get defaultValue() {
         return [];
@@ -83,7 +83,7 @@ class SelectChipsCrudField extends CrudField {
     /**
      * Gets the new value of the field after editing.
      *
-     * @returns {(Array.<number>|Array.<string>)} New value.
+     * @returns {(Array.<string>)} New value.
      */
     get newValue() {
         if(this.edit) {
@@ -117,7 +117,7 @@ class SelectChipsCrudField extends CrudField {
         const options = this.columnDesc.options.values.filter(x => !(fieldValue.includes(x)));
         // Create select
         const selectChips = document.createElement("select");
-        selectChips.setAttribute("style", "width:auto !important");
+        selectChips.setAttribute("style", "width:auto !important;");
         selectChips.setAttribute("class", "custom-select mr-2");
         selectChips.appendChild(createElement(`<option>${this.crud.text("field.selectChips.select")}</option>`));
         for(const choice of options) {
@@ -137,13 +137,31 @@ class SelectChipsCrudField extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {(Array.<string>)} newValue             - New value after edition.
+     * @param   {object}           validators           - Validators object.
+     * @param   {number}           validators.minSelect - Minimum number of selected element
+     *                                                    for the select chips field.
+     * @param   {number}           validators.maxSelect - Maximum number of selected element
+     *                                                    for the select chips field.
      * @returns {boolean}
      */
-    isValid() {
-        const newValue = this.newValue;
-        return newValue != null && Array.isArray(newValue);
+    _checkValidators(newValue, validators) {
+        return !(
+            validators.minSelect != null && newValue.length < validators.minSelect ||
+            validators.maxSelect != null && newValue.length > validators.maxSelect
+        );
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {(Array.<string>)} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return Array.isArray(newValue) && newValue.every((val) => this.columnDesc.options.values.includes(val));
     }
 
 }

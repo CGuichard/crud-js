@@ -84,33 +84,42 @@ class CrudField {
     constructor(value, columnDesc, crud) {
         /* Ensure non-instantiation. */
         if(new.target === CrudField) {
-            throw new TypeError("Cannot construct CrudField instances directly");
+            throw new TypeError("Cannot construct CrudField instance directly");
         }
-        /**
-         * The CrudField value member.
-         *
-         * @protected
-         * @type {*}
-         */
-        this._value = value;
-        /**
-         * The CrudField value member.
-         *
-         * @protected
-         * @type {object}
-         * @property {string}         name             - The column name.
-         * @property {string}         type             - The column type.
-         * @property {object}         [options]        - The column options.
-         * @property {Array.<object>} [options.values] - The column possible values.
-         */
-        this._columnDesc = columnDesc;
-        /**
-         * The CrudComponent which contains the field.
-         *
-         * @protected
-         * @type {CrudComponent}
-         */
-        this._crud = crud;
+        if(arguments.length > 0) {
+            /**
+            * The CrudField value member.
+            *
+            * @protected
+            * @type {*}
+            */
+            this._value = value;
+            /**
+            * The CrudField value member.
+            *
+            * @protected
+            * @type {object}
+            * @property {string}         name             - The column name.
+            * @property {string}         type             - The column type.
+            * @property {object}         [options]        - The column options.
+            * @property {Array.<object>} [options.values] - The column possible values.
+            */
+            this._columnDesc = columnDesc;
+            /**
+            * The CrudComponent which contains the field.
+            *
+            * @protected
+            * @type {CrudComponent}
+            */
+            this._crud = crud;
+            /**
+            * The CrudField value member.
+            *
+            * @protected
+            * @type {HTMLElement}
+            */
+            this._element = CrudField.createElement();
+        }
         /**
          * The CrudField value member.
          *
@@ -118,13 +127,6 @@ class CrudField {
          * @type {number}
          */
         this._state = FIELD_STATE.VIEW;
-        /**
-         * The CrudField value member.
-         *
-         * @protected
-         * @type {HTMLElement}
-         */
-        this._element = CrudField.createElement();
     }
 
     /* Getters & Setters */
@@ -145,6 +147,15 @@ class CrudField {
      */
     get columnDesc() {
         return this._columnDesc;
+    }
+
+    /**
+     * Accessor of CrudField help text.
+     *
+     * @readonly
+     */
+    get helpText() {
+        return (this.columnDesc.options != null && this.columnDesc.options.helpText != null && typeof this.columnDesc.options.helpText === "string") ? this.columnDesc.options.helpText : "";
     }
 
     /**
@@ -196,9 +207,15 @@ class CrudField {
         resetElementHTML(this.element);
         switch(this.state) {
             case FIELD_STATE.VIEW:
+                if(this.element.getAttribute("title") != "") {
+                    this.element.setAttribute("title", "");
+                }
                 this._buildDisplayView();
                 break;
             case FIELD_STATE.EDIT:
+                if(this.helpText.length > 0) {
+                    this.element.setAttribute("title", this.helpText);
+                }
                 this._buildEditView();
                 break;
             default:
@@ -228,7 +245,43 @@ class CrudField {
         return this.value;
     }
 
+    /**
+     * Returns true if the new value after edition is valid, else false.
+     *
+     * @returns {boolean}
+     */
+    isValid() {
+        const newValue = this.newValue;
+        if(newValue != null) {
+            return this._checkField(newValue) && ((this.columnDesc.options != null && this.columnDesc.options.validators != null) ? this._checkValidators(newValue, this.columnDesc.options.validators) : true);
+        }
+        return false;
+    }
+
     /* Abstract methods */
+
+    /**
+     * Returns true if the validators are valid, else false. Called only when validators exists.
+     *
+     * @abstract
+     * @param   {*}      newValue   - New value after edition.
+     * @param   {object} validators - Validators object.
+     * @returns {boolean}
+     */
+    _checkValidators(newValue, validators) {
+        throw new Error("Method not implemented");
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @abstract
+     * @param   {*} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        throw new Error("Method not implemented");
+    }
 
     /**
      * Returns the default value when actual value is undefined or null.
@@ -267,16 +320,6 @@ class CrudField {
      * @abstract
      */
     _buildEditView() {
-        throw new Error("Method not implemented");
-    }
-
-    /**
-     * Returns true if the new value after edition is valid, else false.
-     *
-     * @abstract
-     * @returns {boolean}
-     */
-    isValid() {
         throw new Error("Method not implemented");
     }
 

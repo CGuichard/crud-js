@@ -53,8 +53,10 @@ class CrudFieldDecorator extends CrudField {
      *                                                         that build its display view.
      * @param {function}    customCrudField.buildEditView    - Function of the custom field object
      *                                                         that build its edit view.
-     * @param {function}    customCrudField.isValid          - Function of the custom field object
-     *                                                         that check if its value is validated.
+     * @param {function}    customCrudField.checkField       - Function of the custom field object
+     *                                                         that check if its value is valid.
+     * @param {function}    customCrudField.checkValidators  - Function of the custom field object
+     *                                                         that check if its validators are valid.
      */
     constructor(customCrudField) {
         super();
@@ -74,12 +76,14 @@ class CrudFieldDecorator extends CrudField {
          *                                            that build its display view.
          * @property {function}    buildEditView    - Function of the custom field object
          *                                            that build its edit view.
-         * @property {function}    isValid          - Function of the custom field object
-         *                                            that check if its value is validated.
+         * @property {function}    checkField       - Function of the custom field object
+         *                                            that check if its value is valid.
+         * @property {function}    checkValidators  - Function of the custom field object
+         *                                            that check if its validators are valid.
          */
         this.__customCrudField = customCrudField;
-        if(!this.__customCrudField.element.className.includes(FIELD_CSS_CLASS)) {
-            this.__customCrudField.element.className += ` ${FIELD_CSS_CLASS}`;
+        if(!this.element.className.includes(FIELD_CSS_CLASS)) {
+            this.element.className += ` ${FIELD_CSS_CLASS}`;
         }
     }
 
@@ -154,12 +158,27 @@ class CrudFieldDecorator extends CrudField {
     }
 
     /**
-     * Returns true if the new value after edition is valid, else false.
+     * Returns true if the validators are valid, else false. Called only when validators exists.
      *
+     * @param   {*}      newValue   - New value after edition.
+     * @param   {object} validators - Validators object.
      * @returns {boolean}
      */
-    isValid() {
-        return this.__customCrudField.isValid();
+    _checkValidators(newValue, validators) {
+        if(this.__customCrudField.checkValidators != null) {
+            return  this.__customCrudField.checkValidators(newValue, validators);
+        }
+        throw new Error("Custom field need checkValidators function");
+    }
+
+    /**
+     * Returns true if the field is valid, else false.
+     *
+     * @param   {*} newValue - New value after edition.
+     * @returns {boolean}
+     */
+    _checkField(newValue) {
+        return this.__customCrudField.checkField(newValue);
     }
 
 }
