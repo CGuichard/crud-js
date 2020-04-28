@@ -28,13 +28,15 @@ const LANGUAGES = {
             ok: "OK",
             cancel: "Cancel",
             error: "Error",
-            warning: "Warning"
+            warning: "Warning",
+            info: "Info"
         },
         component: {
             configurationError: "Incorrect configuration. Please read the README of the project to correct your configuration.",
             urlError: "An error occured while trying to fetch resource. See:"
         },
         request: {
+            alreadySaved: "Already up to date",
             badResponse: "Bad response",
             okResponse: "Saving done",
             addImpossible: "Could not add the line:",
@@ -78,13 +80,15 @@ const LANGUAGES = {
             ok: "OK",
             cancel: "Annuler",
             error: "Erreur",
-            warning: "Attention"
+            warning: "Attention",
+            info: "Info"
         },
         component: {
             configurationError: "Configuration incorrect. Veuillez lire le README du projet pour corriger votre configuration.",
             urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez:"
         },
         request: {
+            alreadySaved: "Déjà à jour",
             badResponse: "Mauvaise réponse",
             okResponse: "Sauvegarde effectuée",
             addImpossible: "Impossible d'ajouter la ligne :",

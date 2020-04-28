@@ -46,80 +46,49 @@ class CrudRequest {
     }
 
     send(values) {
-        let newNewValues = [];
-        let modifyOldValues = [];
-        let modifyNewValues = [];
-        let deletedOldValues = [];
-
-        this.noError = true;
-        let self = this;
-        values.forEach(function(element) {
-            switch(element.status) {
-                case 'N':
-                    newNewValues.push(element);
-                    break;
-                case 'M':
-                    modifyOldValues.push(element.oldValue);
-                    modifyNewValues.push(element);
-                    break;
-                case 'D':
-                    deletedOldValues.push(element.oldValue);
-                    break;
+        const self = this;
+        const data = this.collectData(values);
+        if(data.needSave) {
+            let noError = true;
+            const headers = { "Content-Type": "application/json" };
+            if(typeof CSRF !== 'undefined' && CSRF !== null) {
+                headers['X-CSRFToken'] = CSRF;
             }
-        });
-
-        let headers = {"Content-Type":"application/json"};
-        if(typeof CSRF !== 'undefined' && CSRF !== null) {
-            headers['X-CSRFToken'] = CSRF;
-        }
-
-        fetch(self.url, {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify({
-                "actions": [
-                    {
-                        "request": "NEW",
-                        "new_values": newNewValues
-                    },
-                    {
-                        "request": "MODIFIED",
-                        "old_values": modifyOldValues,
-                        "new_values": modifyNewValues
-                    },
-                    {
-                        "request": "DELETED",
-                        "old_values": deletedOldValues
+            fetch(self.url, {
+                method: "POST",
+                headers: headers,
+                body: self.makeUpdateJSON(data)
+            }).then(function(response) {
+                return response.json();
+            }).then(function(json) {
+                json.actions.forEach(function(action) {
+                    if(!("result" in action)) {
+                        noError = false;
+                        self.addMessageFunc("danger", self.crud.text("basic.error"), self.crud.text("request.badResponse"), 5000);
+                    } else {
+                        noError = self.handle(action, values) && noError;
                     }
-                ]
-            })
-        }).then(function(response) {
-            return response.json();
-        }).then(function(json) {
-            json.actions.forEach(function(action) {
-                if(!("result" in action)) {
-                    self.noError = false;
-                    self.addMessageFunc("danger", self.crud.text("basic.error"), self.crud.text("request.badResponse"), 5000);
-                } else {
-                    self.handle(action, values);
+                });
+                if(noError) {
+                    self.addMessageFunc("success", self.crud.text("basic.ok"), self.crud.text("request.okResponse"), 5000);
                 }
+            }).catch(function(error) {
+                console.error(error);
             });
-            if(self.noError) {
-                self.addMessageFunc("success", self.crud.text("basic.ok"), self.crud.text("request.okResponse"), 5000);
-            }
-        }).catch(function(error) {
-            console.error(error);
-        });
+        } else {
+            self.addMessageFunc("info", self.crud.text("basic.info"), self.crud.text("request.alreadySaved"), 2000);
+        }
     }
 
     handle(action, values) {
         const self = this;
+        let noError = true;
         switch(action.request) {
             case "NEW":
                 action.result.forEach(function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
-                        self.noError = false;
+                        noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                         el.status = 'S';
@@ -131,7 +100,7 @@ class CrudRequest {
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.old_values[i].join(', ')}' / '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
-                        self.noError = false;
+                        noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                         el.status = 'S';
@@ -144,7 +113,7 @@ class CrudRequest {
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 15000);
-                        self.noError = false;
+                        noError = false;
                     } else {
                         const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));
                         valuesToDelete.push(indexInValues);
@@ -155,6 +124,53 @@ class CrudRequest {
                 }
                 break;
         }
+        return noError;
+    }
+
+    collectData(values) {
+        const data = {
+            newNewValues: [],
+            modifyOldValues: [],
+            modifyNewValues: [],
+            deletedOldValues: [],
+            needSave: undefined
+        };
+        values.forEach(function(element) {
+            switch(element.status) {
+                case 'N':
+                    data.newNewValues.push(element);
+                    break;
+                case 'M':
+                    data.modifyOldValues.push(element.oldValue);
+                    data.modifyNewValues.push(element);
+                    break;
+                case 'D':
+                    data.deletedOldValues.push(element.oldValue);
+                    break;
+            }
+        });
+        data.needSave = data.newNewValues.length > 0 || data.modifyOldValues.length > 0 || data.deletedOldValues.length > 0;
+        return data;
+    }
+
+    makeUpdateJSON(data) {
+        return JSON.stringify({
+            "actions": [
+                {
+                    "request": "NEW",
+                    "new_values": data.newNewValues
+                },
+                {
+                    "request": "MODIFIED",
+                    "old_values": data.modifyOldValues,
+                    "new_values": data.modifyNewValues
+                },
+                {
+                    "request": "DELETED",
+                    "old_values": data.deletedOldValues
+                }
+            ]
+        });
     }
 
 }
