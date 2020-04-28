@@ -35,6 +35,7 @@ class CrudTable {
 
     constructor(crud) {
         this.crud = crud;
+        this.horizontalScroll = false;
         this.element = createElement("<div class=\"table-responsive\"></div>");
         this.element.innerHTML = `
         <table class="table">
@@ -59,6 +60,7 @@ class CrudTable {
         this.renderLines();
         this.renderModal();
         this.updateLineNumbers();
+        this.addEvents();
     }
 
     resetTable() {
@@ -85,11 +87,11 @@ class CrudTable {
 
     renderLines() {
         if(this.getCrud().isEditable()) {
-            this.addCrudLine(new AddCrudLine(this));
+            this.appendCrudLine(new AddCrudLine(this));
         }
         const values = this.crud.getData().values;
         for(var i = 0; i < values.length; i++) {
-            this.addCrudLine(new EditCrudLine(this, values[i]));
+            this.appendCrudLine(new EditCrudLine(this, values[i]));
         }
     }
 
@@ -109,9 +111,36 @@ class CrudTable {
         }
     }
 
-    addCrudLine(crudLine) {
-        crudLine.show();
+    addEvents() {
+        const self = this;
+        this.element.onmousedown = function() {
+            self.horizontalScroll = this.clientWidth < this.children[0].clientWidth;
+        };
+        this.element.onmouseup = function() {
+            self.horizontalScroll = false;
+        };
+        this.element.addEventListener("wheel", function(event) {
+            if(event.type == 'wheel' && self.horizontalScroll) {
+                this.scrollLeft -= ((((event.deltaY || -event.wheelDelta || event.detail) >> 10) || 1) * -50);
+                event.preventDefault();
+            }
+        });
+    }
+
+    appendCrudLine(crudLine) {
         this.tbody.appendChild(crudLine.element);
+        crudLine.show();
+    }
+
+    appendNewEditCrudLine(editCrudLine) {
+        this.crud.getData().values.push(editCrudLine.values);
+        const editLines = this.tbody.getElementsByClassName('crudjs-edit-line');
+        if(editLines.length > 0) {
+            this.tbody.insertBefore(editCrudLine.element, editLines[0]);
+        } else {
+            this.tbody.appendChild(editCrudLine.element);
+        }
+        editCrudLine.show();
     }
 
     disableButtons() {

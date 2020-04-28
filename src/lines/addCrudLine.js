@@ -91,9 +91,7 @@ class AddCrudLine extends CrudLine {
             for(let i = 0; i < this.values.length; i++) {
                 this.values[i] = this.fields[i].validate();
             }
-            const values = this.values;
-            this.crudTable.crud.getData().values.push(values);
-            this.crudTable.addCrudLine(new EditCrudLine(this.crudTable, values));
+            this.crudTable.appendNewEditCrudLine(new EditCrudLine(this.crudTable, this.values));
             this._reset();
             this.crudTable.updateLineNumbers();
         }
