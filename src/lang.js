@@ -62,6 +62,11 @@ const LANGUAGES = {
                 cancel: "Cancel",
                 add: "Add",
                 addCancel: "Reset",
+                example: {
+                    toggler: "Examples",
+                    copy: "Copy",
+                    hide: "Hide"
+                }
             },
             messages: {
                 invalidColumn: "Invalid column:"
@@ -85,7 +90,7 @@ const LANGUAGES = {
         },
         component: {
             configurationError: "Configuration incorrect. Veuillez lire le README du projet pour corriger votre configuration.",
-            urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez:"
+            urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez :"
         },
         request: {
             alreadySaved: "Déjà à jour",
@@ -114,6 +119,11 @@ const LANGUAGES = {
                 cancel: "Annuler",
                 add: "Ajouter",
                 addCancel: "Réinitialiser",
+                example: {
+                    toggler: "Exemples",
+                    copy: "Copier",
+                    hide: "Cacher"
+                }
             },
             messages: {
                 invalidColumn: "Colonne invalide :"
@@ -154,7 +164,7 @@ const DEFAULT_LANG = "en";
          }
          return value;
      }
-     throw new Error("Language not found");
+     throw new Error("Language not found.");
  }
 
 /**

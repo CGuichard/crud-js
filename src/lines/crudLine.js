@@ -47,25 +47,38 @@ const LINE_STATE = Object.freeze({ NEW: "N", MODIFIED: "M", DELETED: "D", SAVED:
 
 class CrudLine {
 
-    static createEmptyValues(size) {
-        const values = new Array(size);
-        values.status = LINE_STATE.NEW;
-        values.oldValue = [...values];
+    static formatValues(values) {
+        if(values.status == null) {
+            values.status = LINE_STATE.NEW;
+        }
+        if(values.oldValue == null) {
+            if(values.status == LINE_STATE.NEW) {
+                values.oldValue = new Array(values.length);
+            } else {
+                values.oldValue = [...values];
+            }
+        }
         return values;
     }
 
-    constructor(crudTable, lineArray) {
+    static createEmptyValues(size) {
+        const values = new Array(size);
+        return CrudLine.formatValues(values);
+    }
+
+    constructor(crudTable, lineArray, className) {
         /* Ensure non-instantiation. */
         if(new.target === CrudLine) {
-            throw new TypeError("Cannot construct CrudLine instance directly");
+            throw new TypeError("Cannot construct CrudLine instance directly.");
         }
         this._crudTable = crudTable;
         this._element = document.createElement("tr");
-        this._columns = this._crudTable.crud.getData().columns;
-        this._values = (lineArray != null) ? lineArray : CrudLine.createEmptyValues(this._columns.length);
+        this._element.className = (className != null) ? className : "";
+        this._columns = this._crudTable.crud.getColumns();
+        this._values = (lineArray != null) ? CrudLine.formatValues(lineArray) : CrudLine.createEmptyValues(this._columns.length);
         const factory = CrudFieldFactory.getInstance();
         this._fields = [];
-        for(var i = 0; i < this._values.length; i++) {
+        for(let i = 0; i < this._values.length; i++) {
             const field = factory.create(this._columns[i].type, this._values[i], this._columns[i], this._crudTable.crud);
             this._fields.push(field);
         }
@@ -147,22 +160,20 @@ class CrudLine {
         hide(this.element);
     }
 
-    remove() {
-        this.element.remove();
-        const dataValues = this.crudTable.crud.getData().values;
-        dataValues.splice(dataValues.indexOf(this.values), 1);
+    delete() {
+        this.crudTable.deleteCrudLine(this);
     }
 
-    _reset() {
-        this.values = CrudLine.createEmptyValues(this.values.length);
-        this._update();
-    }
-
-    _update() {
+    update() {
         for(let i = 0; i < this.values.length; i++) {
             this.fields[i].value = this.values[i];
             this.fields[i].update();
         }
+    }
+
+    _reset() {
+        this.values = CrudLine.createEmptyValues(this.values.length);
+        this.update();
     }
 
     _prepareShow() {
@@ -189,7 +200,7 @@ class CrudLine {
     /* Abstract methods */
 
     show() {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
 }

@@ -21,7 +21,7 @@
  * ------------------------------------------------------------------------
  */
 
-import { createElement, resetElementHTML, isHidden, hide, display } from "./utils.js";
+import { createElement, resetElementHTML, isHidden, hide, show } from "./utils.js";
 import { langExist, text, DEFAULT_LANG } from "./lang.js";
 import CrudTable from "./crudTable.js";
 import CrudRequest from "./crudRequest.js";
@@ -187,6 +187,14 @@ class CrudComponent extends HTMLElement {
         return this.getData().values;
     }
 
+    getColumns() {
+        return this.getData().columns;
+    }
+
+    getOptions() {
+        return (this.getData().options != null) ? this.getData().options : {};
+    }
+
     getLang() {
         return this.getAttr("lang");
     }
@@ -236,7 +244,7 @@ class CrudComponent extends HTMLElement {
         for(const line of this.getElementsByClassName("crudjs-edit-line")) {
             if(line.textContent.toLowerCase().includes(filterValue.toLowerCase())) {
                 if(isHidden(line)) {
-                    display(line);
+                    show(line);
                 }
             } else {
                 if(!isHidden(line)) {
@@ -252,8 +260,8 @@ class CrudComponent extends HTMLElement {
             timeM = 20000;
         }
         const toast = createElement(`
-            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
-              <strong>`+titleM+`:</strong> `+textM+`
+            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-${typeM} alert-dismissible fade show" role="alert">
+              <strong class="text-uppercase">${titleM}:</strong> ${textM}
               <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
         `);
@@ -287,7 +295,7 @@ class CrudComponent extends HTMLElement {
     displayTable() {
         const table = this.getAttr("table");
         table.render();
-        this.setChild(table.getElement());
+        this.setChild(table.element);
     }
 
     // Events
