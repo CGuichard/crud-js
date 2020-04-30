@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>
-      lines/fields/intCrudField.js - Documentation
+      lines/exampleCrudLine.js - Documentation
   </title>
 
   <link href="https://www.braintreepayments.com/images/favicon-ccda0b14.png" rel="icon" type="image/png">
@@ -83,7 +83,7 @@
   <div id="main">
     
       <h1 class="page-title">
-        lines/fields/intCrudField.js
+        lines/exampleCrudLine.js
       </h1>
     
 
@@ -93,7 +93,7 @@
 <section>
   <article>
     <pre class="prettyprint source linenums"><code>/**
- * @file This file contains the IntCrudField object.
+ * @file This file contains the ExampleCrudLine object.
  *
  * @author Clement GUICHARD &lt;clement.guichard0@gmail.com>
  * @version 1.0.0
@@ -114,7 +114,8 @@
  * ------------------------------------------------------------------------
  */
 
-import { CrudField } from './crudField.js';
+import { hide } from "../utils.js";
+import { CrudLine } from "./crudLine.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -122,93 +123,64 @@ import { CrudField } from './crudField.js';
  * ------------------------------------------------------------------------
  */
 
-/**
- * Class representing an integer field for the CRUD.
- *
- * @extends CrudField
- */
-class IntCrudField extends CrudField {
+class ExampleCrudLine extends CrudLine {
 
-    /**
-     * Creates an IntCrudField.
-     *
-     * @constructor
-     * @param {number}        value      - The value of the field.
-     * @param {object}        columnDesc - The back-end description of the field column.
-     * @param {CrudComponent} crud       - The CrudComponent which contains the field.
-     */
-    constructor(value, columnDesc, crud) {
-        super(value, columnDesc, crud);
-    }
-
-    /**
-     * Gets the default value when actual value is undefined or null.
-     *
-     * @returns {int} Default value.
-     */
-    get defaultValue() {
-        return 0;
-    }
-
-    /**
-     * Gets the new value of the field after editing.
-     *
-     * @returns {int} New value.
-     */
-    get newValue() {
-        if(this.edit) {
-            const value = this.element.getElementsByTagName('input')[0].value;
-            return (value.length > 0) ? Number(value) : null;
+    constructor(crudTable, lineArray) {
+        super(crudTable, lineArray, "crudjs-example-line");
+        this.element.style.backgroundColor = "rgba(253, 108, 158, 0.25)";
+        if(!this.crudTable.crud.isEditable()) {
+            throw new Error("Cannot use ExampleCrudLine if CRUD is not editable.");
         }
-        return this.value;
     }
 
-    /**
-     * Builds the display view.
-     *
-     * @protected
-     */
-    _buildDisplayView() {
-        this.element.innerHTML = this.value;
+    /* Show methods */
+
+    show() {
+        hide(this.element);
+        this._prepareShow();
+        this.__addExampleTagColumn();
+        for(const field of this.fields) {
+            field.showDisplayView();
+            this._addColumn(field.element);
+        }
+        this.__addActionsColumn();
     }
 
-    /**
-     * Builds the edit view.
-     *
-     * @protected
-     */
-    _buildEditView() {
-        this.element.innerHTML = `&lt;input type="number" class="form-control m-0" placeholder="${this.columnDesc.name}" value="${this.value}" style="background-image:linear-gradient(0deg,#1e99d6 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);width:60px;">`;
+    __addExampleTagColumn() {
+        const thExampleTag = document.createElement("th");
+        thExampleTag.setAttribute("scope", "row");
+        thExampleTag.className = "align-middle text-center";
+        thExampleTag.innerHTML = `&lt;i class="fas fa-tags text-secondary">&lt;/i>`;
+        this.element.appendChild(thExampleTag);
     }
 
-    /**
-     * Returns true if the validators are valid, else false. Called only when validators exists.
-     *
-     * @param   {int}    newValue       - New value after edition.
-     * @param   {object} validators     - Validators object.
-     * @param   {number} validators.min - Minimum of the int field.
-     * @param   {number} validators.max - Maximum of the int field.
-     * @returns {boolean}
-     */
-    _checkValidators(newValue, validators) {
-        return !(
-            validators.min != null &amp;&amp; newValue &lt; validators.min ||
-            validators.max != null &amp;&amp; newValue > validators.max
-        );
+    __addActionsColumn() {
+        const crud = this.crudTable.crud;
+        const tdActions = document.createElement("td");
+        tdActions.className = "align-middle text-right";
+        tdActions.innerHTML = `
+            &lt;button type="button" style="width:45px;" class="crudjs-action-btn crudjs-example-copy-btn btn btn-raised btn-info mb-1 rounded" title="${crud.text("line.btn.example.copy")}">&lt;i class="fas fa-copy">&lt;/i>&lt;/button>
+            &lt;button type="button" style="width:45px;" class="crudjs-action-btn crudjs-example-hide-btn btn btn-raised btn-danger mb-1 rounded pl-0 pr-0" title="${crud.text("line.btn.example.hide")}">&lt;i class="fas fa-eye-slash">&lt;/i>&lt;/button>
+        `;
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-example-copy-btn')[0], "copyEvent");
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-example-hide-btn')[0], "hideEvent");
+        this.element.appendChild(tdActions);
     }
 
-    /**
-     * Returns true if the field is valid, else false.
-     *
-     * @param   {int} newValue - New value after edition.
-     * @returns {boolean}
-     */
-    _checkField(newValue) {
-        return Number.isInteger(newValue);
+    /* Events */
+
+    copyEvent() {
+        this.crudTable.copyIntoAdd(this.values);
+    }
+
+    hideEvent() {
+        if(--this.crudTable.examples.numberShown &lt;= 0) {
+            this.crudTable.examples.show = false;
+        }
+        hide(this.element);
     }
 
 }
-
 
 /**
  * ------------------------------------------------------------------------
@@ -216,8 +188,8 @@ class IntCrudField extends CrudField {
  * ------------------------------------------------------------------------
  */
 
-export { IntCrudField };
-export default IntCrudField;
+export { ExampleCrudLine };
+export default ExampleCrudLine;
 </code></pre>
   </article>
 </section>
