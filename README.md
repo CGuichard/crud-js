@@ -183,17 +183,6 @@ The _url_ attribute defines the URL at which the data are retrieved and updated.
 
 To get it work checkout the back-end communication.
 
-### Languages
-
-It is possible to use another language. Supported languages are:
-- **en** - English
-- **fr** - French
-
-Add it with the attribute **lang**:
-```html
-<crud-js lang="fr" url="/data/url" save-button="my-save-btn"></crud-js>
-```
-
 ### Back-end communication
 
 To use CrudJS you will have to define a URL in your back-end server. The method HTTP GET on it will retrieve the data as a JSON in a specific format. All modifications saved in the CRUD will be sent to the same URL as HTTP POST request in another specific format.
@@ -236,7 +225,7 @@ The formats of the requests (GET and POST) is as follow:
     ]
 }
 ```
-As you can see, the json is in two part. First it describ the columns of the resulting table, and after that the values for each line of data. Available field types now are: text, int, select, select-chips.
+As you can see, the json is in two part. First it describ the columns of the resulting table, and after that the values for each line of data. Available field types are described in another section below.
 
 * **(POST)** Data update format example:
 ```JSON
@@ -324,48 +313,287 @@ In each action, a field _result_ appeared just like previously, each item of the
 
 ### General options
 
-#### Custom delete message
+#### Languages
 
-Development feature not documented for the moment.
+It is possible to use another language than english. Supported languages are:
+- **en** - English
+- **fr** - French
 
-#### Examples
-
-// TODO
-
-### Column options
+Add it with the attribute **lang**:
+```html
+<crud-js lang="fr" url="/data/url" save-button="my-save-btn"></crud-js>
+```
+If there's no **lang** attribute, then CrudJS will take the lang of the document specified in the **html** tag.
 
 #### Filters
 
-Development feature not documented for the moment.
+You can use a text input to filter your CRUD with the **filter** attribute pointing to the input id:
+```html
+<input id="my-filter" type="text" placeholder="Filter">
+<crud-js lang="fr" url="/data/url" save-button="my-save-btn" filter="my-filter"></crud-js>
+```
+If you want to connect multiple filters you can use **filters** attribute and html class:
+```html
+<input class="my-filters" type="text" placeholder="Filter 1">
+<input class="my-filters" type="text" placeholder="Filter 2">
+<crud-js lang="fr" url="/data/url" save-button="my-save-btn" filters="my-filters"></crud-js>
+```
+All columns are filtered, and the ones that don't match are hidden.
+
+#### Custom delete message
+
+You can add a custom delete message for your CRUD. Add it in options of the **GET** JSON:
+```JSON
+{
+    "columns": [...],
+    "values": [...],
+    "options": {
+        "deleteMessage": "Your custom delete message that will appear in the delete modal."
+    }
+}
+```
+
+#### Examples
+
+Sometimes examples are great to explain what is possible. You can add examples by modifying the options of the **GET** JSON:
+```JSON
+{
+    "columns": [...],
+    "values": [...],
+    "options": {
+        "examples": [
+            ["Example", "example@example.com", 1, "Other", ["Tuesday"]],
+            ["AnotherExample", "another-example@example.com", 2, "Other", ["Monday", "Tuesday"]]
+        ]
+    }
+}
+```
+The examples must follow the same structure than the values (which format correspond to the columns given).
+
+### Fields
+
+#### Default fields
+
+Available fields:
+- int:
+```JSON
+{
+    "columns": [
+        {
+            "name": "Integer field",
+            "type": "int",
+            "options": {}
+        }
+    ],
+    "values": [
+        [ 1 ]
+    ]
+}
+```
+This field represent an integer.
+
+- text:
+```JSON
+{
+    "columns": [
+        {
+            "name": "Text field",
+            "type": "text",
+            "options": {}
+        }
+    ],
+    "values": [
+        [ "example" ]
+    ]
+}
+```
+This field represent a text, a string.
+
+- select:
+```JSON
+{
+    "columns": [
+        {
+            "name": "Select field",
+            "type": "select",
+            "options": {
+                "values": ["example-1", "example-2", "example-3"]
+            }
+        }
+    ],
+    "values": [
+        [ "example-1" ]
+    ]
+}
+```
+This field represent a select. You need to give it the possible values. Its value and values are only text for now.
+
+- select-chips:
+```JSON
+{
+    "columns": [
+        {
+            "name": "Select chips field",
+            "type": "select-chips",
+            "options": {
+                "values": ["example-1", "example-2", "example-3"]
+            }
+        }
+    ],
+    "values": [
+        [ ["example-1", "example-2"] ]
+    ]
+}
+```
+This field represent a multiple select with chips. You give it the possible values, and its value will be a list. Value and values must be text for the moment.
+
+#### Custom fields
+
+It is possible to add custom fields, one is present in the demo. In order to add a custom field you will need to declare it before adding CrudJS to your page. You can add it in a script or a file:
+```html
+<script src="myCustomField.js"></script> <!-- Add your custom field -->
+<script src="<crud-js>"></script> <!-- Add CrudJS -->
+```
+Here _myCustomField.js_ content:
+```javascript
+/*
+ * Your element constructor
+ *
+ * @param   {*}             value      - The value of the field.
+ * @param   {object}        columnDesc - The back-end description of the field column.
+ * @param   {CrudComponent} crud       - The crud component.
+ */
+function CustomField(value, columnDesc, crud) {
+    this.value = value;
+    this.columnDesc = columnDesc;
+    this.crud = crud;
+    this.element = document.createElement("td");
+}
+
+/*
+ * Function of the custom field object that gives its default value.
+ *
+ * @returns {*} Default value.
+ */
+CustomField.prototype.getDefaultValue = function() {}
+
+/*
+ * Gets the new value of the field after editing. Called by edit view.
+ *
+ * @returns {*} New value.
+ */
+CustomField.prototype.getNewValue = function() {}
+
+/*
+ * Function of the custom field object that build its display view.
+ */
+CustomField.prototype.buildDisplayView = function() {
+    this.element.innerHTML = `you element html in display view`;
+}
+
+/*
+ * Function of the custom field object that build its edit view.
+ */
+CustomField.prototype.buildEditView = function() {
+    var value = this.value;
+    if(!value) {
+        value = this.getDefaultValue();
+    }
+    this.element.innerHTML = `your element html in edit view`;
+}
+
+/*
+ * Function of the custom field object that check if its validators are valid.
+ * This function is called only when validators are given in the column validators.
+ * Please check the section dedicated to validators to know more about it.
+ *
+ * @returns {boolean} True if validators pass, else false.
+ */
+CustomField.prototype.checkValidators = function(newValue, validators) {}
+
+/*
+ * Function of the custom field object that check if its value is valid.
+ *
+ * @returns {boolean} True if field new value is correct pass, else false.
+ */
+CustomField.prototype.checkField = function(newValue) {}
+
+// Register your field for CrudJS as 'custom-field'. You can add multiple custom fields.
+var CUSTOM_FIELDS = {
+    'custom-field': CustomField
+};
+```
+
+Complete example for 'email' field in [/static/js/demo.js](./static/js/demo.js).
+
+### Column options
 
 #### Validators
 
-Development feature not documented for the moment.
+Validators allow you to add some verifications to validate data on client side. You can specify for each column validators like that:
+```JSON
+{
+    "name": "Name",
+    "type": "text",
+    "options": {
+        "validators": { ... }
+    }
+}
+```
+Now the possible **"validators"** values per field (Each is optional):
+- int:
+```JSON
+{
+    "min": <minimum-integer-value>,
+    "max": <maximum-integer-value>
+}
+```
+- text:
+```JSON
+{
+    "minLength": <minimum-length-of-the-text>,
+    "maxLength": <maximum-length-of-the-text>,
+    "regex": <regex-for-the-text>
+}
+```
+- select: No validators.
+- select-chips:
+```JSON
+{
+    "minSelect": <minimum-number-chips>,
+    "maxSelect": <maximum-number-chips>
+}
+```
 
 #### Help text
 
-Development feature not documented for the moment.
-
-#### Default values
-
-// TODO
-
-### Custom fields
-
-Development feature not documented for the moment.
+You can add add some text to help people understand the data you expected. The help text is used in error messages, and on hover of columns of the add line and lines when they are edited.
+To specify a column help text add in the column description of the **GET** JSON:
+```JSON
+{
+    "name": ...,
+    "type": ...,
+    "options": {
+        "helpText": "I'm a text here to help you!",
+    }
+}
+```
 
 ### CSRF token
 
-Development feature not documented for the moment.
-
+Sometimes your back-end will ask for a CSRF token. You can give one to CrudJS like that:
+```html
+<script>
+    var CSRF = "<your-CSRF-token>"; // Important! Your variable need to be global.
+</script>
+<script src="<crud-js>"></script> <!-- Add CrudJS -->
+```
 
 ## <a name="contributing"></a> Contributing
 
 If you want to contribute to this project or understand how it works, please check [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Any contributions you make are **greatly appreciated**.
-
-
 
 ## <a name="workflows-ci"></a> Workflows/CI
 
