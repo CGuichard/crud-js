@@ -161,6 +161,13 @@ class CrudComponent extends HTMLElement {
                 this.getAttr("saveButton").onclick = function() {
                     self.save();
                 };
+                window.onbeforeunload = function(event) {
+                    const e = event || window.event;
+                    if(self.getData() != null && self.getAttr("request").collectData(self.getValues()).needSave) {
+                        e.returnValue = false; // For IE and Firefox
+                        return false; // For Safari
+                    }
+                };
             }
             this.load();
         } else {
