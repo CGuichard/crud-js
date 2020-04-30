@@ -345,8 +345,8 @@ All columns are filtered, and the ones that don't match are hidden.
 You can add a custom delete message for your CRUD. Add it in options of the **GET** JSON:
 ```JSON
 {
-    "columns": [...],
-    "values": [...],
+    "columns": [  ],
+    "values": [  ],
     "options": {
         "deleteMessage": "Your custom delete message that will appear in the delete modal."
     }
@@ -358,8 +358,8 @@ You can add a custom delete message for your CRUD. Add it in options of the **GE
 Sometimes examples are great to explain what is possible. You can add examples by modifying the options of the **GET** JSON:
 ```JSON
 {
-    "columns": [...],
-    "values": [...],
+    "columns": [  ],
+    "values": [  ],
     "options": {
         "examples": [
             ["Example", "example@example.com", 1, "Other", ["Tuesday"]],
@@ -536,7 +536,7 @@ Validators allow you to add some verifications to validate data on client side. 
     "name": "Name",
     "type": "text",
     "options": {
-        "validators": { ... }
+        "validators": {  }
     }
 }
 ```
@@ -544,26 +544,32 @@ Now the possible **"validators"** values per field (Each is optional):
 - int:
 ```JSON
 {
-    "min": <minimum-integer-value>,
-    "max": <maximum-integer-value>
+    "min": "<minimum-integer-value>",
+    "max": "<maximum-integer-value>"
 }
 ```
+An integer value is needed for both **"min"** and **"max"**.
+
 - text:
 ```JSON
 {
-    "minLength": <minimum-length-of-the-text>,
-    "maxLength": <maximum-length-of-the-text>,
-    "regex": <regex-for-the-text>
+    "minLength": "<minimum-length-of-the-text>",
+    "maxLength": "<maximum-length-of-the-text>",
+    "regex": "<regex-for-the-text>"
 }
 ```
+The **"minLength"** and the **"maxLength"** need an integer value, and **"regex"** need a string representing a Regex.
+
 - select: No validators.
+
 - select-chips:
 ```JSON
 {
-    "minSelect": <minimum-number-chips>,
-    "maxSelect": <maximum-number-chips>
+    "minSelect": "<minimum-number-chips>",
+    "maxSelect": "<maximum-number-chips>"
 }
 ```
+An integer value is expected for both **"minSelect"** and **"maxSelect"**.
 
 #### Help text
 
@@ -571,8 +577,8 @@ You can add add some text to help people understand the data you expected. The h
 To specify a column help text add in the column description of the **GET** JSON:
 ```JSON
 {
-    "name": ...,
-    "type": ...,
+    "name": "<column-name>",
+    "type": "<column-type>",
     "options": {
         "helpText": "I'm a text here to help you!",
     }
