@@ -270,15 +270,6 @@ On the push for dev branch and issue-* branches an artifact is in the <a href="h
 </code></pre>
 <p>The <em>url</em> attribute defines the URL at which the data are retrieved and updated. For editable CRUD you need to create a save button with an id specified in the <em>save-button</em> attribute of the <strong>crud-js</strong> component.</p>
 <p>To get it work checkout the back-end communication.</p>
-<h3>Languages</h3>
-<p>It is possible to use another language. Supported languages are:</p>
-<ul>
-<li><strong>en</strong> - English</li>
-<li><strong>fr</strong> - French</li>
-</ul>
-<p>Add it with the attribute <strong>lang</strong>:</p>
-<pre class="prettyprint source lang-html"><code>&lt;crud-js lang=&quot;fr&quot; url=&quot;/data/url&quot; save-button=&quot;my-save-btn&quot;>&lt;/crud-js>
-</code></pre>
 <h3>Back-end communication</h3>
 <p>To use CrudJS you will have to define a URL in your back-end server. The method HTTP GET on it will retrieve the data as a JSON in a specific format. All modifications saved in the CRUD will be sent to the same URL as HTTP POST request in another specific format.</p>
 <p>The formats of the requests (GET and POST) is as follow:</p>
@@ -319,7 +310,7 @@ On the push for dev branch and issue-* branches an artifact is in the <a href="h
     ]
 }
 </code></pre>
-<p>As you can see, the json is in two part. First it describ the columns of the resulting table, and after that the values for each line of data. Available field types now are: text, int, select, select-chips.</p>
+<p>As you can see, the json is in two part. First it describ the columns of the resulting table, and after that the values for each line of data. Available field types are described in another section below.</p>
 <ul>
 <li><strong>(POST)</strong> Data update format example:</li>
 </ul>
@@ -407,23 +398,263 @@ On the push for dev branch and issue-* branches an artifact is in the <a href="h
 <li><code>[&quot;ERROR&quot;, errorText]</code>: If the operation failed. The variable <code>errorText</code> is a string detailing the error.</li>
 </ul>
 <h3>General options</h3>
-<h4>Custom delete message</h4>
-<p>Development feature not documented for the moment.</p>
-<h4>Examples</h4>
-<p>// TODO</p>
-<h3>Column options</h3>
+<h4>Languages</h4>
+<p>It is possible to use another language than english. Supported languages are:</p>
+<ul>
+<li><strong>en</strong> - English</li>
+<li><strong>fr</strong> - French</li>
+</ul>
+<p>Add it with the attribute <strong>lang</strong>:</p>
+<pre class="prettyprint source lang-html"><code>&lt;crud-js lang=&quot;fr&quot; url=&quot;/data/url&quot; save-button=&quot;my-save-btn&quot;>&lt;/crud-js>
+</code></pre>
+<p>If there's no <strong>lang</strong> attribute, then CrudJS will take the lang of the document specified in the <strong>html</strong> tag.</p>
 <h4>Filters</h4>
-<p>Development feature not documented for the moment.</p>
+<p>You can use a text input to filter your CRUD with the <strong>filter</strong> attribute pointing to the input id:</p>
+<pre class="prettyprint source lang-html"><code>&lt;input id=&quot;my-filter&quot; type=&quot;text&quot; placeholder=&quot;Filter&quot;>
+&lt;crud-js lang=&quot;fr&quot; url=&quot;/data/url&quot; save-button=&quot;my-save-btn&quot; filter=&quot;my-filter&quot;>&lt;/crud-js>
+</code></pre>
+<p>If you want to connect multiple filters you can use <strong>filters</strong> attribute and html class:</p>
+<pre class="prettyprint source lang-html"><code>&lt;input class=&quot;my-filters&quot; type=&quot;text&quot; placeholder=&quot;Filter 1&quot;>
+&lt;input class=&quot;my-filters&quot; type=&quot;text&quot; placeholder=&quot;Filter 2&quot;>
+&lt;crud-js lang=&quot;fr&quot; url=&quot;/data/url&quot; save-button=&quot;my-save-btn&quot; filters=&quot;my-filters&quot;>&lt;/crud-js>
+</code></pre>
+<p>All columns are filtered, and the ones that don't match are hidden.</p>
+<h4>Custom delete message</h4>
+<p>You can add a custom delete message for your CRUD. Add it in options of the <strong>GET</strong> JSON:</p>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;columns&quot;: [  ],
+    &quot;values&quot;: [  ],
+    &quot;options&quot;: {
+        &quot;deleteMessage&quot;: &quot;Your custom delete message that will appear in the delete modal.&quot;
+    }
+}
+</code></pre>
+<h4>Examples</h4>
+<p>Sometimes examples are great to explain what is possible. You can add examples by modifying the options of the <strong>GET</strong> JSON:</p>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;columns&quot;: [  ],
+    &quot;values&quot;: [  ],
+    &quot;options&quot;: {
+        &quot;examples&quot;: [
+            [&quot;Example&quot;, &quot;example@example.com&quot;, 1, &quot;Other&quot;, [&quot;Tuesday&quot;]],
+            [&quot;AnotherExample&quot;, &quot;another-example@example.com&quot;, 2, &quot;Other&quot;, [&quot;Monday&quot;, &quot;Tuesday&quot;]]
+        ]
+    }
+}
+</code></pre>
+<p>The examples must follow the same structure than the values (which format correspond to the columns given).</p>
+<h3>Fields</h3>
+<h4>Default fields</h4>
+<p>Available fields:</p>
+<ul>
+<li>int:</li>
+</ul>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;columns&quot;: [
+        {
+            &quot;name&quot;: &quot;Integer field&quot;,
+            &quot;type&quot;: &quot;int&quot;,
+            &quot;options&quot;: {}
+        }
+    ],
+    &quot;values&quot;: [
+        [ 1 ]
+    ]
+}
+</code></pre>
+<p>This field represent an integer.</p>
+<ul>
+<li>text:</li>
+</ul>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;columns&quot;: [
+        {
+            &quot;name&quot;: &quot;Text field&quot;,
+            &quot;type&quot;: &quot;text&quot;,
+            &quot;options&quot;: {}
+        }
+    ],
+    &quot;values&quot;: [
+        [ &quot;example&quot; ]
+    ]
+}
+</code></pre>
+<p>This field represent a text, a string.</p>
+<ul>
+<li>select:</li>
+</ul>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;columns&quot;: [
+        {
+            &quot;name&quot;: &quot;Select field&quot;,
+            &quot;type&quot;: &quot;select&quot;,
+            &quot;options&quot;: {
+                &quot;values&quot;: [&quot;example-1&quot;, &quot;example-2&quot;, &quot;example-3&quot;]
+            }
+        }
+    ],
+    &quot;values&quot;: [
+        [ &quot;example-1&quot; ]
+    ]
+}
+</code></pre>
+<p>This field represent a select. You need to give it the possible values. Its value and values are only text for now.</p>
+<ul>
+<li>select-chips:</li>
+</ul>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;columns&quot;: [
+        {
+            &quot;name&quot;: &quot;Select chips field&quot;,
+            &quot;type&quot;: &quot;select-chips&quot;,
+            &quot;options&quot;: {
+                &quot;values&quot;: [&quot;example-1&quot;, &quot;example-2&quot;, &quot;example-3&quot;]
+            }
+        }
+    ],
+    &quot;values&quot;: [
+        [ [&quot;example-1&quot;, &quot;example-2&quot;] ]
+    ]
+}
+</code></pre>
+<p>This field represent a multiple select with chips. You give it the possible values, and its value will be a list. Value and values must be text for the moment.</p>
+<h4>Custom fields</h4>
+<p>It is possible to add custom fields, one is present in the demo. In order to add a custom field you will need to declare it before adding CrudJS to your page. You can add it in a script or a file:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;myCustomField.js&quot;>&lt;/script> &lt;!-- Add your custom field -->
+&lt;script src=&quot;&lt;crud-js>&quot;>&lt;/script> &lt;!-- Add CrudJS -->
+</code></pre>
+<p>Here <em>myCustomField.js</em> content:</p>
+<pre class="prettyprint source lang-javascript"><code>/*
+ * Your element constructor
+ *
+ * @param   {*}             value      - The value of the field.
+ * @param   {object}        columnDesc - The back-end description of the field column.
+ * @param   {CrudComponent} crud       - The crud component.
+ */
+function CustomField(value, columnDesc, crud) {
+    this.value = value;
+    this.columnDesc = columnDesc;
+    this.crud = crud;
+    this.element = document.createElement(&quot;td&quot;);
+}
+
+/*
+ * Function of the custom field object that gives its default value.
+ *
+ * @returns {*} Default value.
+ */
+CustomField.prototype.getDefaultValue = function() {}
+
+/*
+ * Gets the new value of the field after editing. Called by edit view.
+ *
+ * @returns {*} New value.
+ */
+CustomField.prototype.getNewValue = function() {}
+
+/*
+ * Function of the custom field object that build its display view.
+ */
+CustomField.prototype.buildDisplayView = function() {
+    this.element.innerHTML = `you element html in display view`;
+}
+
+/*
+ * Function of the custom field object that build its edit view.
+ */
+CustomField.prototype.buildEditView = function() {
+    var value = this.value;
+    if(!value) {
+        value = this.getDefaultValue();
+    }
+    this.element.innerHTML = `your element html in edit view`;
+}
+
+/*
+ * Function of the custom field object that check if its validators are valid.
+ * This function is called only when validators are given in the column validators.
+ * Please check the section dedicated to validators to know more about it.
+ *
+ * @returns {boolean} True if validators pass, else false.
+ */
+CustomField.prototype.checkValidators = function(newValue, validators) {}
+
+/*
+ * Function of the custom field object that check if its value is valid.
+ *
+ * @returns {boolean} True if field new value is correct pass, else false.
+ */
+CustomField.prototype.checkField = function(newValue) {}
+
+// Register your field for CrudJS as 'custom-field'. You can add multiple custom fields.
+var CUSTOM_FIELDS = {
+    'custom-field': CustomField
+};
+</code></pre>
+<p>Complete example for 'email' field in <a href="./static/js/demo.js">/static/js/demo.js</a>.</p>
+<h3>Column options</h3>
 <h4>Validators</h4>
-<p>Development feature not documented for the moment.</p>
+<p>Validators allow you to add some verifications to validate data on client side. You can specify for each column validators like that:</p>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;name&quot;: &quot;Name&quot;,
+    &quot;type&quot;: &quot;text&quot;,
+    &quot;options&quot;: {
+        &quot;validators&quot;: {  }
+    }
+}
+</code></pre>
+<p>Now the possible <strong>&quot;validators&quot;</strong> values per field (Each is optional):</p>
+<ul>
+<li>int:</li>
+</ul>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;min&quot;: &quot;&lt;minimum-integer-value>&quot;,
+    &quot;max&quot;: &quot;&lt;maximum-integer-value>&quot;
+}
+</code></pre>
+<p>An integer value is needed for both <strong>&quot;min&quot;</strong> and <strong>&quot;max&quot;</strong>.</p>
+<ul>
+<li>text:</li>
+</ul>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;minLength&quot;: &quot;&lt;minimum-length-of-the-text>&quot;,
+    &quot;maxLength&quot;: &quot;&lt;maximum-length-of-the-text>&quot;,
+    &quot;regex&quot;: &quot;&lt;regex-for-the-text>&quot;
+}
+</code></pre>
+<p>The <strong>&quot;minLength&quot;</strong> and the <strong>&quot;maxLength&quot;</strong> need an integer value, and <strong>&quot;regex&quot;</strong> need a string representing a Regex.</p>
+<ul>
+<li>
+<p>select: No validators.</p>
+</li>
+<li>
+<p>select-chips:</p>
+</li>
+</ul>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;minSelect&quot;: &quot;&lt;minimum-number-chips>&quot;,
+    &quot;maxSelect&quot;: &quot;&lt;maximum-number-chips>&quot;
+}
+</code></pre>
+<p>An integer value is expected for both <strong>&quot;minSelect&quot;</strong> and <strong>&quot;maxSelect&quot;</strong>.</p>
 <h4>Help text</h4>
-<p>Development feature not documented for the moment.</p>
-<h4>Default values</h4>
-<p>// TODO</p>
-<h3>Custom fields</h3>
-<p>Development feature not documented for the moment.</p>
+<p>You can add add some text to help people understand the data you expected. The help text is used in error messages, and on hover of columns of the add line and lines when they are edited.
+To specify a column help text add in the column description of the <strong>GET</strong> JSON:</p>
+<pre class="prettyprint source lang-JSON"><code>{
+    &quot;name&quot;: &quot;&lt;column-name>&quot;,
+    &quot;type&quot;: &quot;&lt;column-type>&quot;,
+    &quot;options&quot;: {
+        &quot;helpText&quot;: &quot;I'm a text here to help you!&quot;,
+    }
+}
+</code></pre>
 <h3>CSRF token</h3>
-<p>Development feature not documented for the moment.</p>
+<p>Sometimes your back-end will ask for a CSRF token. You can give one to CrudJS like that:</p>
+<pre class="prettyprint source lang-html"><code>&lt;script>
+    var CSRF = &quot;&lt;your-CSRF-token>&quot;; // Important! Your variable need to be global.
+&lt;/script>
+&lt;script src=&quot;&lt;crud-js>&quot;>&lt;/script> &lt;!-- Add CrudJS -->
+</code></pre>
 <h2><a name="contributing"></a> Contributing</h2>
 <p>If you want to contribute to this project or understand how it works, please check <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
 <p>Any contributions you make are <strong>greatly appreciated</strong>.</p>
