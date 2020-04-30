@@ -92,7 +92,11 @@ app.get('/demo/data', function(req, res) {
             ["Super Cookie", "super-cookie@example.com", 1, "Other", ["Saturday"]]
         ],
         options: {
-            deleteMessage: "You want to delete this line? Sure at 100%?"
+            deleteMessage: "You want to delete this line? Sure at 100%?",
+            examples: [
+                ["Example", "example@example.com", 77, "Other", ["Tuesday"]],
+                ["AnotherExample", "another-example@example.com", 65, "Other", ["Monday", "Tuesday"]]
+            ]
         }
     };
     res.json(json);
@@ -112,13 +116,13 @@ app.post('/demo/data', function(req, res) {
             case "MODIFIED":
                 req.body.actions[i].result = [];
                 for(j = 0; j < req.body.actions[i].new_values.length; j++) {
-                    req.body.actions[i].result.push(['ERROR', "Bitch"]);
+                    req.body.actions[i].result.push(['OK']);
                 }
                 break;
             case "DELETED":
                 req.body.actions[i].result = [];
                 for(j = 0; j < req.body.actions[i].old_values.length; j++) {
-                    req.body.actions[i].result.push(['OK']);
+                    req.body.actions[i].result.push(['ERROR', "Example of error"]);
                 }
                 break;
         }

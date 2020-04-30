@@ -54,7 +54,7 @@ function hide(element) {
 /**
  * @since 1.0.0
  */
-function display(element) {
+function show(element) {
     element.style.display = "";
 }
 
@@ -88,13 +88,15 @@ const LANGUAGES = {
             ok: "OK",
             cancel: "Cancel",
             error: "Error",
-            warning: "Warning"
+            warning: "Warning",
+            info: "Info"
         },
         component: {
             configurationError: "Incorrect configuration. Please read the README of the project to correct your configuration.",
             urlError: "An error occured while trying to fetch resource. See:"
         },
         request: {
+            alreadySaved: "Already up to date",
             badResponse: "Bad response",
             okResponse: "Saving done",
             addImpossible: "Could not add the line:",
@@ -120,6 +122,11 @@ const LANGUAGES = {
                 cancel: "Cancel",
                 add: "Add",
                 addCancel: "Reset",
+                example: {
+                    toggler: "Examples",
+                    copy: "Copy",
+                    hide: "Hide"
+                }
             },
             messages: {
                 invalidColumn: "Invalid column:"
@@ -138,13 +145,15 @@ const LANGUAGES = {
             ok: "OK",
             cancel: "Annuler",
             error: "Erreur",
-            warning: "Attention"
+            warning: "Attention",
+            info: "Info"
         },
         component: {
             configurationError: "Configuration incorrect. Veuillez lire le README du projet pour corriger votre configuration.",
-            urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez:"
+            urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez :"
         },
         request: {
+            alreadySaved: "Déjà à jour",
             badResponse: "Mauvaise réponse",
             okResponse: "Sauvegarde effectuée",
             addImpossible: "Impossible d'ajouter la ligne :",
@@ -170,6 +179,11 @@ const LANGUAGES = {
                 cancel: "Annuler",
                 add: "Ajouter",
                 addCancel: "Réinitialiser",
+                example: {
+                    toggler: "Exemples",
+                    copy: "Copier",
+                    hide: "Cacher"
+                }
             },
             messages: {
                 invalidColumn: "Colonne invalide :"
@@ -210,7 +224,7 @@ const DEFAULT_LANG = "en";
          }
          return value;
      }
-     throw new Error("Language not found");
+     throw new Error("Language not found.");
  }
 
 /**
@@ -283,7 +297,7 @@ class CrudField {
     constructor(value, columnDesc, crud) {
         /* Ensure non-instantiation. */
         if(new.target === CrudField) {
-            throw new TypeError("Cannot construct CrudField instance directly");
+            throw new TypeError("Cannot construct CrudField instance directly.");
         }
         if(arguments.length > 0) {
             /**
@@ -467,7 +481,7 @@ class CrudField {
      * @returns {boolean}
      */
     _checkValidators(newValue, validators) {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -478,7 +492,7 @@ class CrudField {
      * @returns {boolean}
      */
     _checkField(newValue) {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -488,7 +502,7 @@ class CrudField {
      * @returns {*} Default value.
      */
     get defaultValue() {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -498,7 +512,7 @@ class CrudField {
      * @returns {*} New value.
      */
     get newValue() {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -508,7 +522,7 @@ class CrudField {
      * @abstract
      */
     _buildDisplayView() {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -518,7 +532,7 @@ class CrudField {
      * @abstract
      */
     _buildEditView() {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
 }
@@ -677,7 +691,7 @@ class CrudFieldDecorator extends CrudField {
         if(this.__customCrudField.checkValidators != null) {
             return  this.__customCrudField.checkValidators(newValue, validators);
         }
-        throw new Error("Custom field need checkValidators function");
+        throw new Error("Custom field need checkValidators function.");
     }
 
     /**
@@ -1230,7 +1244,7 @@ class CrudFieldFactory {
             const _field = this.__cls[name];
             return new _field(value, columnDesc, crud);
         } else {
-            throw new Error(`Unknown type: ${name}`);
+            throw new Error(`Unknown type: ${name}.`);
         }
     }
 
@@ -1268,25 +1282,38 @@ const LINE_STATE = Object.freeze({ NEW: "N", MODIFIED: "M", DELETED: "D", SAVED:
 
 class CrudLine {
 
-    static createEmptyValues(size) {
-        const values = new Array(size);
-        values.status = LINE_STATE.NEW;
-        values.oldValue = [...values];
+    static formatValues(values) {
+        if(values.status == null) {
+            values.status = LINE_STATE.NEW;
+        }
+        if(values.oldValue == null) {
+            if(values.status == LINE_STATE.NEW) {
+                values.oldValue = new Array(values.length);
+            } else {
+                values.oldValue = [...values];
+            }
+        }
         return values;
     }
 
-    constructor(crudTable, lineArray) {
+    static createEmptyValues(size) {
+        const values = new Array(size);
+        return CrudLine.formatValues(values);
+    }
+
+    constructor(crudTable, lineArray, className) {
         /* Ensure non-instantiation. */
         if(new.target === CrudLine) {
-            throw new TypeError("Cannot construct CrudLine instance directly");
+            throw new TypeError("Cannot construct CrudLine instance directly.");
         }
         this._crudTable = crudTable;
         this._element = document.createElement("tr");
-        this._columns = this._crudTable.crud.getData().columns;
-        this._values = (lineArray != null) ? lineArray : CrudLine.createEmptyValues(this._columns.length);
+        this._element.className = (className != null) ? className : "";
+        this._columns = this._crudTable.crud.getColumns();
+        this._values = (lineArray != null) ? CrudLine.formatValues(lineArray) : CrudLine.createEmptyValues(this._columns.length);
         const factory = CrudFieldFactory.getInstance();
         this._fields = [];
-        for(var i = 0; i < this._values.length; i++) {
+        for(let i = 0; i < this._values.length; i++) {
             const field = factory.create(this._columns[i].type, this._values[i], this._columns[i], this._crudTable.crud);
             this._fields.push(field);
         }
@@ -1368,22 +1395,20 @@ class CrudLine {
         hide(this.element);
     }
 
-    remove() {
-        this.element.remove();
-        const dataValues = this.crudTable.crud.getData().values;
-        dataValues.splice(dataValues.indexOf(this.values), 1);
+    delete() {
+        this.crudTable.deleteCrudLine(this);
     }
 
-    _reset() {
-        this.values = CrudLine.createEmptyValues(this.values.length);
-        this._update();
-    }
-
-    _update() {
+    update() {
         for(let i = 0; i < this.values.length; i++) {
             this.fields[i].value = this.values[i];
             this.fields[i].update();
         }
+    }
+
+    _reset() {
+        this.values = CrudLine.createEmptyValues(this.values.length);
+        this.update();
     }
 
     _prepareShow() {
@@ -1410,7 +1435,7 @@ class CrudLine {
     /* Abstract methods */
 
     show() {
-        throw new Error("Method not implemented");
+        throw new Error("Method not implemented.");
     }
 
 }
@@ -1433,8 +1458,7 @@ class CrudLine {
 class EditCrudLine extends CrudLine {
 
     constructor(crudTable, lineArray) {
-        super(crudTable, lineArray);
-        this.element.className = "crudjs-edit-line";
+        super(crudTable, lineArray, "crudjs-edit-line");
     }
 
     /* Show methods */
@@ -1469,8 +1493,8 @@ class EditCrudLine extends CrudLine {
 
     __addNumberColumn() {
         const thNumber = document.createElement("th");
-        thNumber.className = "crudjs-line-number align-middle text-center";
         thNumber.setAttribute("scope", "row");
+        thNumber.className = "crudjs-line-number align-middle text-center";
         this.element.appendChild(thNumber);
     }
 
@@ -1480,7 +1504,7 @@ class EditCrudLine extends CrudLine {
         tdActions.className = "align-middle text-right";
         tdActions.innerHTML = `
             <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-edit-btn btn btn-raised btn-info mb-1 rounded" title="${crud.text("line.btn.edit")}"><i class="fas fa-pencil-alt"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#${this.crudTable.getDeleteModalId()}" title="${crud.text("line.btn.delete")}"><i class="fas fa-trash"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-delete-btn btn btn-raised btn-danger mb-1 rounded" data-toggle="modal" data-target="#${this.crudTable.deleteModalId}" title="${crud.text("line.btn.delete")}"><i class="fas fa-trash"></i></button>
         `;
         this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-edit-btn')[0], "editEvent");
         this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-delete-btn')[0], "deleteEvent");
@@ -1490,7 +1514,7 @@ class EditCrudLine extends CrudLine {
     __addEditActionsColumn() {
         const crud = this.crudTable.crud;
         const tdActions = document.createElement("td");
-        tdActions.className = "text-right";
+        tdActions.className = "align-middle text-right";
         tdActions.innerHTML = `
             <button type="button" style="width:45px;" class="crudjs-validate-btn btn btn-raised btn-success mb-1 rounded" title="${crud.text("line.btn.validate")}"><i class="fas fa-sm fa-check"></i></button>
             <button type="button" style="width:45px;" class="crudjs-cancel-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.cancel")}"><i class="fas fa-times"></i></button>
@@ -1510,13 +1534,13 @@ class EditCrudLine extends CrudLine {
 
     deleteEvent() {
         const self = this;
-        const btnValidDelete = this.crudTable.getDeleteModal().getElementsByClassName('crudjs-modal-valid')[0];
+        const btnValidDelete = this.crudTable.deleteModal.getElementsByClassName('crudjs-modal-valid')[0];
         btnValidDelete.onclick = function() {
             if(self.isModified() || self.isSaved()) {
                 self.goDeleted();
                 self.hide();
             } else if(self.isNew()) {
-                self.remove();
+                self.delete();
             }
             self.crudTable.updateLineNumbers();
             self.crudTable.enableButtons();
@@ -1531,7 +1555,7 @@ class EditCrudLine extends CrudLine {
                 errorMessages.push(`${this.crudTable.crud.text("line.messages.invalidColumn")} '${this.fields[i].columnDesc.name}'${(helpText.length>0)?` − ${helpText}`:""}`);
             }
         }
-        if(errorMessages  != null && errorMessages.length > 0) {
+        if(errorMessages != null && errorMessages.length > 0) {
             for(const errorMsg of errorMessages) {
                 this.crudTable.crud.addMessage("warning", this.crudTable.crud.text("basic.warning"), errorMsg, 10000);
             }
@@ -1575,11 +1599,9 @@ class EditCrudLine extends CrudLine {
 class AddCrudLine extends CrudLine {
 
     constructor(crudTable) {
-        super(crudTable);
-        if(this.crudTable.crud.isEditable()) {
-            this.element.className = "crudjs-add-line";
-        } else {
-            throw new Error("Cannot use AddCrudLine if CRUD is not ");
+        super(crudTable, null, "crudjs-add-line");
+        if(!this.crudTable.crud.isEditable()) {
+            throw new Error("Cannot use AddCrudLine if CRUD is not editable.");
         }
     }
 
@@ -1587,7 +1609,11 @@ class AddCrudLine extends CrudLine {
 
     show() {
         this._prepareShow();
-        this._addEmptyColumn();
+        if(this.crudTable.crud.getOptions().examples != null) {
+            this.__addExamplesToggleColumn();
+        } else {
+            this._addEmptyColumn();
+        }
         for(const field of this.fields) {
             field.showEditView();
             this._addColumn(field.element);
@@ -1595,13 +1621,22 @@ class AddCrudLine extends CrudLine {
         this.__addActionsColumn();
     }
 
+    __addExamplesToggleColumn() {
+        const thToggle = document.createElement("th");
+        thToggle.setAttribute("scope", "row");
+        thToggle.className = "align-middle text-center";
+        thToggle.innerHTML = `<i title="${this.crudTable.crud.text("line.btn.example.toggler")}" class="help-toggler fas fa-exclamation-circle fa-lg text-info" style="cursor: pointer;"></i>`;
+        this._attachOnClickEvent(thToggle.getElementsByClassName('help-toggler')[0], "helpToggleEvent");
+        this.element.appendChild(thToggle);
+    }
+
     __addActionsColumn() {
         const crud = this.crudTable.crud;
         const tdActions = document.createElement("td");
-        tdActions.className = "text-right";
+        tdActions.className = "align-middle text-right";
         tdActions.innerHTML = `
             <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-add-btn btn btn-raised btn-secondary mb-1 rounded" title="${crud.text("line.btn.add")}"><i class="fas fa-plus"></i></button>
-            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-reset-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.addCancel")}"><i class="fas fa-times"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-reset-btn btn btn-raised btn-danger mb-1 rounded" title="${crud.text("line.btn.addCancel")}"><i class="fas fa-undo"></i></button>
         `;
         this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-add-btn')[0], "addEvent");
         this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-reset-btn')[0], "resetEvent");
@@ -1609,6 +1644,10 @@ class AddCrudLine extends CrudLine {
     }
 
     /* Events */
+
+    helpToggleEvent() {
+        this.crudTable.helpToggleEvent();
+    }
 
     resetEvent() {
         for(const field of this.fields) {
@@ -1642,6 +1681,79 @@ class AddCrudLine extends CrudLine {
 }
 
 /**
+ * @file This file contains the ExampleCrudLine object.
+ *
+ * @author Clement GUICHARD <clement.guichard0@gmail.com>
+ * @version 1.0.0
+ *
+ */
+
+/**
+ * ------------------------------------------------------------------------
+ * Class Definition
+ * ------------------------------------------------------------------------
+ */
+
+class ExampleCrudLine extends CrudLine {
+
+    constructor(crudTable, lineArray) {
+        super(crudTable, lineArray, "crudjs-example-line");
+        this.element.style.backgroundColor = "rgba(253, 108, 158, 0.25)";
+        if(!this.crudTable.crud.isEditable()) {
+            throw new Error("Cannot use ExampleCrudLine if CRUD is not editable.");
+        }
+    }
+
+    /* Show methods */
+
+    show() {
+        hide(this.element);
+        this._prepareShow();
+        this.__addExampleTagColumn();
+        for(const field of this.fields) {
+            field.showDisplayView();
+            this._addColumn(field.element);
+        }
+        this.__addActionsColumn();
+    }
+
+    __addExampleTagColumn() {
+        const thExampleTag = document.createElement("th");
+        thExampleTag.setAttribute("scope", "row");
+        thExampleTag.className = "align-middle text-center";
+        thExampleTag.innerHTML = `<i class="fas fa-tags text-secondary"></i>`;
+        this.element.appendChild(thExampleTag);
+    }
+
+    __addActionsColumn() {
+        const crud = this.crudTable.crud;
+        const tdActions = document.createElement("td");
+        tdActions.className = "align-middle text-right";
+        tdActions.innerHTML = `
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-example-copy-btn btn btn-raised btn-info mb-1 rounded" title="${crud.text("line.btn.example.copy")}"><i class="fas fa-copy"></i></button>
+            <button type="button" style="width:45px;" class="crudjs-action-btn crudjs-example-hide-btn btn btn-raised btn-danger mb-1 rounded pl-0 pr-0" title="${crud.text("line.btn.example.hide")}"><i class="fas fa-eye-slash"></i></button>
+        `;
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-example-copy-btn')[0], "copyEvent");
+        this._attachOnClickEvent(tdActions.getElementsByClassName('crudjs-example-hide-btn')[0], "hideEvent");
+        this.element.appendChild(tdActions);
+    }
+
+    /* Events */
+
+    copyEvent() {
+        this.crudTable.copyIntoAdd(this.values);
+    }
+
+    hideEvent() {
+        if(--this.crudTable.examples.numberShown <= 0) {
+            this.crudTable.examples.show = false;
+        }
+        hide(this.element);
+    }
+
+}
+
+/**
  * @file This file contains the CrudTable object.
  *
  * @author Clement GUICHARD <clement.guichard0@gmail.com>
@@ -1659,10 +1771,12 @@ class AddCrudLine extends CrudLine {
 class CrudTable {
 
     constructor(crud) {
-        this.crud = crud;
-        this.horizontalScroll = false;
-        this.element = createElement("<div class=\"table-responsive\"></div>");
-        this.element.innerHTML = `
+        this._crud = crud;
+        this._horizontalScroll = false;
+        this._examples = { show: false, number: 0, numberShown: 0 };
+        this._lines = [];
+        this._element = createElement("<div class=\"table-responsive\"></div>");
+        this._element.innerHTML = `
         <table class="table">
           <thead class="thead-light">
           </thead>
@@ -1670,135 +1784,199 @@ class CrudTable {
           </tbody>
         </table>
         `;
-        this.thead = this.element.getElementsByTagName('thead')[0];
-        this.tbody = this.element.getElementsByTagName('tbody')[0];
-        this.deleteModalMessage = this.crud.text("table.modal.delete.message");
-        this.deleteModalId = "crudjs-modal-" + (++CrudTable.ID);
-        this.deleteModal = this.createModal();
+        this._thead = this._element.getElementsByTagName('thead')[0];
+        this._tbody = this._element.getElementsByTagName('tbody')[0];
+        this._deleteModalMessage = this._crud.text("table.modal.delete.message");
+        this._deleteModalId = `crudjs-modal-${++CrudTable.ID}`;
+        this._deleteModal = this.createModal();
     }
 
     // Displays
 
     render() {
-        this.resetTable();
-        this.renderHead();
-        this.renderLines();
-        this.renderModal();
+        this._resetTable();
+        this._renderHead();
+        this._renderLines();
+        this._renderModal();
         this.updateLineNumbers();
-        this.addEvents();
+        this._addEvents();
     }
 
-    resetTable() {
-        resetElementHTML(this.thead);
-        resetElementHTML(this.tbody);
+    _resetTable() {
+        resetElementHTML(this._thead);
+        resetElementHTML(this._tbody);
     }
 
-    renderHead() {
-        this.thead.innerHTML = `<tr><th scope="col"><strong>#</strong></th></tr>`;
-        for(const col of this.crud.getData().columns) {
+    _renderHead() {
+        this._thead.innerHTML = `<tr><th scope="col"><strong>#</strong></th></tr>`;
+        for(const col of this._crud.getColumns()) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
-            th.innerHTML = "<strong>"+col.name+"</strong>";
-            this.thead.children[0].appendChild(th);
+            th.innerHTML = `<strong>${col.name}</strong>`;
+            this._thead.children[0].appendChild(th);
         }
-        if(this.crud.isEditable()) {
+        if(this._crud.isEditable()) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
             th.className = "text-right pr-3";
-            th.innerHTML = `<strong>${this.crud.text("table.column.actionName")}</strong>`;
-            this.thead.children[0].appendChild(th);
+            th.innerHTML = `<strong>${this._crud.text("table.column.actionName")}</strong>`;
+            this._thead.children[0].appendChild(th);
         }
     }
 
-    renderLines() {
-        if(this.getCrud().isEditable()) {
-            this.appendCrudLine(new AddCrudLine(this));
-        }
-        const values = this.crud.getData().values;
-        for(var i = 0; i < values.length; i++) {
-            this.appendCrudLine(new EditCrudLine(this, values[i]));
-        }
-    }
-
-    renderModal() {
-        const options = this.crud.getData().options;
-        if(options != null && options.deleteMessage != null) {
-            this.setDeleteModalMessage(options.deleteMessage);
-        }
-    }
-
-    updateLineNumbers() {
-        let i = 1;
-        for(const elem of this.element.getElementsByClassName('crudjs-line-number')) {
-            if(!isHidden(elem.parentNode)) {
-                elem.textContent = i++;
+    _renderLines() {
+        if(this._crud.isEditable()) {
+            const options = this._crud.getOptions();
+            if(options.examples != null) {
+                for(let i = 0; i < options.examples.length; i++) {
+                    this._examples.number++;
+                    this._appendCrudLine(new ExampleCrudLine(this, options.examples[i]));
+                }
             }
+            this._appendCrudLine(new AddCrudLine(this));
+        }
+        const values = this._crud.getValues();
+        for(let i = 0; i < values.length; i++) {
+            this._appendCrudLine(new EditCrudLine(this, values[i]));
         }
     }
 
-    addEvents() {
+    _renderModal() {
+        const options = this._crud.getOptions();
+        if(options.deleteMessage != null) {
+            this.deleteModalMessage = options._deleteMessage;
+        }
+    }
+
+    _addEvents() {
         const self = this;
-        this.element.onmousedown = function() {
-            self.horizontalScroll = this.clientWidth < this.children[0].clientWidth;
+        this._element.onmousedown = function() {
+            self._horizontalScroll = this.clientWidth < this.children[0].clientWidth;
         };
-        this.element.onmouseup = function() {
-            self.horizontalScroll = false;
+        this._element.onmouseup = function() {
+            self._horizontalScroll = false;
         };
-        this.element.addEventListener("wheel", function(event) {
-            if(event.type == 'wheel' && self.horizontalScroll) {
+        this._element.addEventListener("wheel", function(event) {
+            if(event.type == 'wheel' && self._horizontalScroll) {
                 this.scrollLeft -= ((((event.deltaY || -event.wheelDelta || event.detail) >> 10) || 1) * -50);
                 event.preventDefault();
             }
         });
     }
 
-    appendCrudLine(crudLine) {
-        this.tbody.appendChild(crudLine.element);
+    updateLineNumbers() {
+        let i = 1;
+        for(const elem of this._element.getElementsByClassName('crudjs-line-number')) {
+            if(!isHidden(elem.parentNode)) {
+                elem.textContent = i++;
+            }
+        }
+    }
+
+    // Events
+
+    helpToggleEvent() {
+        this._examples.show = !this._examples.show;
+        if(this._examples.show) {
+            for(const elem of this._element.getElementsByClassName('crudjs-example-line')) {
+                show(elem);
+            }
+            this._examples.numberShown = this._examples.number;
+        } else {
+            for(const elem of this._element.getElementsByClassName('crudjs-example-line')) {
+                hide(elem);
+            }
+            this._examples.numberShown = 0;
+        }
+    }
+
+    // Other methods
+
+    copyIntoAdd(values) {
+        for(let i = 0; i < this._lines.length; i++) {
+            if(this._lines[i].constructor.name == "AddCrudLine") {
+                this._lines[i].values = values;
+                this._lines[i].update();
+            }
+        }
+    }
+
+    _appendCrudLine(crudLine) {
+        this._lines.push(crudLine);
+        this._tbody.appendChild(crudLine.element);
         crudLine.show();
     }
 
+    deleteCrudLine(crudLine) {
+        crudLine.element.remove();
+        const dataValues = this._crud.getValues();
+        const indexV = dataValues.indexOf(crudLine.values);
+        const indexL = this._lines.indexOf(crudLine);
+        if(indexV != -1) {
+            dataValues.splice(indexV, 1);
+        }
+        if(indexL != -1) {
+            this._lines.splice(indexL, 1);
+        }
+    }
+
     appendNewEditCrudLine(editCrudLine) {
-        this.crud.getData().values.push(editCrudLine.values);
-        const editLines = this.tbody.getElementsByClassName('crudjs-edit-line');
+        this._crud.getValues().push(editCrudLine.values);
+        const editLines = this._tbody.getElementsByClassName('crudjs-edit-line');
         if(editLines.length > 0) {
-            this.tbody.insertBefore(editCrudLine.element, editLines[0]);
+            for(let i = 0; i < this._lines.length; i++) {
+                if(this._lines[i].constructor.name == "EditCrudLine") {
+                    this._lines.splice(i, 0, editCrudLine);
+                    break;
+                }
+            }
+            this._tbody.insertBefore(editCrudLine.element, editLines[0]);
         } else {
-            this.tbody.appendChild(editCrudLine.element);
+            this._lines.push(editCrudLine);
+            this._tbody.appendChild(editCrudLine.element);
         }
         editCrudLine.show();
     }
 
     disableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
+        const saveButton = this._crud.getAttr("saveButton");
+        if(saveButton != null) {
+            saveButton.disabled = true;
+        }
+        for(const elem of this._element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = true;
         }
     }
 
     enableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
+        const saveButton = this._crud.getAttr("saveButton");
+        if(saveButton != null) {
+            saveButton.disabled = false;
+        }
+        for(const elem of this._element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = false;
         }
     }
 
     createModal() {
         const modalDelete = createElement(`
-        <div class="modal fade" id="`+this.deleteModalId+`" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" id="${this._deleteModalId}" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">${this.crud.text("table.modal.delete.title")}</h5>
+                <h5 class="modal-title">${this._crud.text("table.modal.delete.title")}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div class="modal-body">
                 <div class="delete-message">
-                    ${this.deleteModalMessage}
+                    ${this._deleteModalMessage}
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">${this.crud.text("basic.no")}</button>
-                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">${this.crud.text("basic.yes")}</button>
+                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">${this._crud.text("basic.no")}</button>
+                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">${this._crud.text("basic.yes")}</button>
               </div>
             </div>
           </div>
@@ -1810,30 +1988,54 @@ class CrudTable {
 
     // Getters and Setters
 
-    getElement() {
-        return this.element;
+    get element() {
+        return this._element;
     }
 
-    getDeleteModal() {
-        return this.deleteModal;
+    get crud() {
+        return this._crud;
     }
 
-    getDeleteModalId() {
-        return this.deleteModalId;
+    get lines() {
+        return this._lines;
     }
 
-    getCrud() {
-        return this.crud;
+    get deleteModal() {
+        return this._deleteModal;
     }
 
-    setDeleteModalMessage(val) {
-        this.deleteModalMessage = val;
-        if(this.deleteModal != null) {
-            const tmp = this.deleteModal.getElementsByClassName("delete-message");
+    get deleteModalId() {
+        return this._deleteModalId;
+    }
+
+    get deleteModalMessage() {
+        return this._deleteModalMessage;
+    }
+
+    get horizontalScroll() {
+        return this._horizontalScroll;
+    }
+
+    get examples() {
+        return this._examples;
+    }
+
+    set lines(val) {
+        this._lines = val;
+    }
+
+    set deleteModalMessage(val) {
+        this._deleteModalMessage = val;
+        if(this._deleteModal != null) {
+            const tmp = this._deleteModal.getElementsByClassName("delete-message");
             if(tmp.length > 0) {
-                tmp[0].textContent = this.deleteModalMessage;
+                tmp[0].textContent = this._deleteModalMessage;
             }
         }
+    }
+
+    set horizontalScroll(val) {
+        this._horizontalScroll = val;
     }
 
 }
@@ -1894,80 +2096,49 @@ class CrudRequest {
     }
 
     send(values) {
-        let newNewValues = [];
-        let modifyOldValues = [];
-        let modifyNewValues = [];
-        let deletedOldValues = [];
-
-        this.noError = true;
-        let self = this;
-        values.forEach(function(element) {
-            switch(element.status) {
-                case 'N':
-                    newNewValues.push(element);
-                    break;
-                case 'M':
-                    modifyOldValues.push(element.oldValue);
-                    modifyNewValues.push(element);
-                    break;
-                case 'D':
-                    deletedOldValues.push(element.oldValue);
-                    break;
+        const self = this;
+        const data = this.collectData(values);
+        if(data.needSave) {
+            let noError = true;
+            const headers = { "Content-Type": "application/json" };
+            if(typeof CSRF !== 'undefined' && CSRF !== null) {
+                headers['X-CSRFToken'] = CSRF;
             }
-        });
-
-        let headers = {"Content-Type":"application/json"};
-        if(typeof CSRF !== 'undefined' && CSRF !== null) {
-            headers['X-CSRFToken'] = CSRF;
-        }
-
-        fetch(self.url, {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify({
-                "actions": [
-                    {
-                        "request": "NEW",
-                        "new_values": newNewValues
-                    },
-                    {
-                        "request": "MODIFIED",
-                        "old_values": modifyOldValues,
-                        "new_values": modifyNewValues
-                    },
-                    {
-                        "request": "DELETED",
-                        "old_values": deletedOldValues
+            fetch(self.url, {
+                method: "POST",
+                headers: headers,
+                body: self.makeUpdateJSON(data)
+            }).then(function(response) {
+                return response.json();
+            }).then(function(json) {
+                json.actions.forEach(function(action) {
+                    if(!("result" in action)) {
+                        noError = false;
+                        self.addMessageFunc("danger", self.crud.text("basic.error"), self.crud.text("request.badResponse"), 5000);
+                    } else {
+                        noError = self.handle(action, values) && noError;
                     }
-                ]
-            })
-        }).then(function(response) {
-            return response.json();
-        }).then(function(json) {
-            json.actions.forEach(function(action) {
-                if(!("result" in action)) {
-                    self.noError = false;
-                    self.addMessageFunc("danger", self.crud.text("basic.error"), self.crud.text("request.badResponse"), 5000);
-                } else {
-                    self.handle(action, values);
+                });
+                if(noError) {
+                    self.addMessageFunc("success", self.crud.text("basic.ok"), self.crud.text("request.okResponse"), 5000);
                 }
+            }).catch(function(error) {
+                console.error(error);
             });
-            if(self.noError) {
-                self.addMessageFunc("success", self.crud.text("basic.ok"), self.crud.text("request.okResponse"), 5000);
-            }
-        }).catch(function(error) {
-            console.error(error);
-        });
+        } else {
+            self.addMessageFunc("info", self.crud.text("basic.info"), self.crud.text("request.alreadySaved"), 2000);
+        }
     }
 
     handle(action, values) {
         const self = this;
+        let noError = true;
         switch(action.request) {
             case "NEW":
                 action.result.forEach(function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.addImpossible")} '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
-                        self.noError = false;
+                        noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                         el.status = 'S';
@@ -1979,7 +2150,7 @@ class CrudRequest {
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.modifyImpossible")} '${action.old_values[i].join(', ')}' / '${action.new_values[i].join(', ')}' − ${val[1]}`, 15000);
-                        self.noError = false;
+                        noError = false;
                     } else {
                         let el = values.find(el => el.join('&') === action.new_values[i].join('&'));
                         el.status = 'S';
@@ -1992,7 +2163,7 @@ class CrudRequest {
                 action.result.forEach( function(val,i) {
                     if(val[0] === "ERROR") {
                         self.addMessageFunc("warning", self.crud.text("basic.error"), `${self.crud.text("request.deleteImpossible")} '${action.old_values[i].join(', ')}' − ${val[1]}`, 15000);
-                        self.noError = false;
+                        noError = false;
                     } else {
                         const indexInValues = values.findIndex(el => el.oldValue.join('&') === action.old_values[i].join('&'));
                         valuesToDelete.push(indexInValues);
@@ -2003,6 +2174,53 @@ class CrudRequest {
                 }
                 break;
         }
+        return noError;
+    }
+
+    collectData(values) {
+        const data = {
+            newNewValues: [],
+            modifyOldValues: [],
+            modifyNewValues: [],
+            deletedOldValues: [],
+            needSave: undefined
+        };
+        values.forEach(function(element) {
+            switch(element.status) {
+                case 'N':
+                    data.newNewValues.push(element);
+                    break;
+                case 'M':
+                    data.modifyOldValues.push(element.oldValue);
+                    data.modifyNewValues.push(element);
+                    break;
+                case 'D':
+                    data.deletedOldValues.push(element.oldValue);
+                    break;
+            }
+        });
+        data.needSave = data.newNewValues.length > 0 || data.modifyOldValues.length > 0 || data.deletedOldValues.length > 0;
+        return data;
+    }
+
+    makeUpdateJSON(data) {
+        return JSON.stringify({
+            "actions": [
+                {
+                    "request": "NEW",
+                    "new_values": data.newNewValues
+                },
+                {
+                    "request": "MODIFIED",
+                    "old_values": data.modifyOldValues,
+                    "new_values": data.modifyNewValues
+                },
+                {
+                    "request": "DELETED",
+                    "old_values": data.deletedOldValues
+                }
+            ]
+        });
     }
 
 }
@@ -2151,6 +2369,13 @@ class CrudComponent extends HTMLElement {
                 this.getAttr("saveButton").onclick = function() {
                     self.save();
                 };
+                window.onbeforeunload = function(event) {
+                    const e = event || window.event;
+                    if(self.getData() != null && self.getAttr("request").collectData(self.getValues()).needSave) {
+                        e.returnValue = false; // For IE and Firefox
+                        return false; // For Safari
+                    }
+                };
             }
             this.load();
         } else {
@@ -2175,6 +2400,14 @@ class CrudComponent extends HTMLElement {
 
     getValues() {
         return this.getData().values;
+    }
+
+    getColumns() {
+        return this.getData().columns;
+    }
+
+    getOptions() {
+        return (this.getData().options != null) ? this.getData().options : {};
     }
 
     getLang() {
@@ -2226,7 +2459,7 @@ class CrudComponent extends HTMLElement {
         for(const line of this.getElementsByClassName("crudjs-edit-line")) {
             if(line.textContent.toLowerCase().includes(filterValue.toLowerCase())) {
                 if(isHidden(line)) {
-                    display(line);
+                    show(line);
                 }
             } else {
                 if(!isHidden(line)) {
@@ -2242,8 +2475,8 @@ class CrudComponent extends HTMLElement {
             timeM = 20000;
         }
         const toast = createElement(`
-            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-`+typeM+` alert-dismissible fade show" role="alert">
-              <strong>`+titleM+`:</strong> `+textM+`
+            <div style="box-shadow:2px 2px 7px black;display:inline-block;float:right;clear:right;pointer-events:auto;" class="alert alert-${typeM} alert-dismissible fade show" role="alert">
+              <strong class="text-uppercase">${titleM}:</strong> ${textM}
               <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
         `);
@@ -2277,7 +2510,7 @@ class CrudComponent extends HTMLElement {
     displayTable() {
         const table = this.getAttr("table");
         table.render();
-        this.setChild(table.getElement());
+        this.setChild(table.element);
     }
 
     // Events

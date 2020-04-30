@@ -99,7 +99,7 @@ class CrudFieldFactory {
             const _field = this.__cls[name];
             return new _field(value, columnDesc, crud);
         } else {
-            throw new Error(`Unknown type: ${name}`);
+            throw new Error(`Unknown type: ${name}.`);
         }
     }
 

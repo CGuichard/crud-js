@@ -168,7 +168,7 @@ class CrudFieldDecorator extends CrudField {
         if(this.__customCrudField.checkValidators != null) {
             return  this.__customCrudField.checkValidators(newValue, validators);
         }
-        throw new Error("Custom field need checkValidators function");
+        throw new Error("Custom field need checkValidators function.");
     }
 
     /**

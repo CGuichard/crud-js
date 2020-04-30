@@ -28,13 +28,15 @@ const LANGUAGES = {
             ok: "OK",
             cancel: "Cancel",
             error: "Error",
-            warning: "Warning"
+            warning: "Warning",
+            info: "Info"
         },
         component: {
             configurationError: "Incorrect configuration. Please read the README of the project to correct your configuration.",
             urlError: "An error occured while trying to fetch resource. See:"
         },
         request: {
+            alreadySaved: "Already up to date",
             badResponse: "Bad response",
             okResponse: "Saving done",
             addImpossible: "Could not add the line:",
@@ -60,6 +62,11 @@ const LANGUAGES = {
                 cancel: "Cancel",
                 add: "Add",
                 addCancel: "Reset",
+                example: {
+                    toggler: "Examples",
+                    copy: "Copy",
+                    hide: "Hide"
+                }
             },
             messages: {
                 invalidColumn: "Invalid column:"
@@ -78,13 +85,15 @@ const LANGUAGES = {
             ok: "OK",
             cancel: "Annuler",
             error: "Erreur",
-            warning: "Attention"
+            warning: "Attention",
+            info: "Info"
         },
         component: {
             configurationError: "Configuration incorrect. Veuillez lire le README du projet pour corriger votre configuration.",
-            urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez:"
+            urlError: "Une erreur est survenue en essayant d'atteindre la resource. Voyez :"
         },
         request: {
+            alreadySaved: "Déjà à jour",
             badResponse: "Mauvaise réponse",
             okResponse: "Sauvegarde effectuée",
             addImpossible: "Impossible d'ajouter la ligne :",
@@ -110,6 +119,11 @@ const LANGUAGES = {
                 cancel: "Annuler",
                 add: "Ajouter",
                 addCancel: "Réinitialiser",
+                example: {
+                    toggler: "Exemples",
+                    copy: "Copier",
+                    hide: "Cacher"
+                }
             },
             messages: {
                 invalidColumn: "Colonne invalide :"
@@ -150,7 +164,7 @@ const DEFAULT_LANG = "en";
          }
          return value;
      }
-     throw new Error("Language not found");
+     throw new Error("Language not found.");
  }
 
 /**

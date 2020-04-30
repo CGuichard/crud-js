@@ -54,7 +54,7 @@ function hide(element) {
 /**
  * @since 1.0.0
  */
-function display(element) {
+function show(element) {
     element.style.display = "";
 }
 
@@ -64,4 +64,4 @@ function display(element) {
  * ------------------------------------------------------------------------
  */
 
-export { createElement, resetElementHTML, isHidden, hide, display };
+export { createElement, resetElementHTML, isHidden, hide, show };

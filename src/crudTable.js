@@ -21,9 +21,10 @@
  * ------------------------------------------------------------------------
  */
 
-import { createElement, isHidden, resetElementHTML } from "./utils.js";
+import { createElement, resetElementHTML, isHidden, hide, show } from "./utils.js";
 import { AddCrudLine } from "./lines/addCrudLine.js";
 import { EditCrudLine } from "./lines/editCrudLine.js";
+import { ExampleCrudLine } from "./lines/exampleCrudLine.js";
 
 /**
  * ------------------------------------------------------------------------
@@ -34,10 +35,12 @@ import { EditCrudLine } from "./lines/editCrudLine.js";
 class CrudTable {
 
     constructor(crud) {
-        this.crud = crud;
-        this.horizontalScroll = false;
-        this.element = createElement("<div class=\"table-responsive\"></div>");
-        this.element.innerHTML = `
+        this._crud = crud;
+        this._horizontalScroll = false;
+        this._examples = { show: false, number: 0, numberShown: 0 };
+        this._lines = [];
+        this._element = createElement("<div class=\"table-responsive\"></div>");
+        this._element.innerHTML = `
         <table class="table">
           <thead class="thead-light">
           </thead>
@@ -45,135 +48,199 @@ class CrudTable {
           </tbody>
         </table>
         `;
-        this.thead = this.element.getElementsByTagName('thead')[0];
-        this.tbody = this.element.getElementsByTagName('tbody')[0];
-        this.deleteModalMessage = this.crud.text("table.modal.delete.message");
-        this.deleteModalId = "crudjs-modal-" + (++CrudTable.ID);
-        this.deleteModal = this.createModal();
+        this._thead = this._element.getElementsByTagName('thead')[0];
+        this._tbody = this._element.getElementsByTagName('tbody')[0];
+        this._deleteModalMessage = this._crud.text("table.modal.delete.message");
+        this._deleteModalId = `crudjs-modal-${++CrudTable.ID}`;
+        this._deleteModal = this.createModal();
     }
 
     // Displays
 
     render() {
-        this.resetTable();
-        this.renderHead();
-        this.renderLines();
-        this.renderModal();
+        this._resetTable();
+        this._renderHead();
+        this._renderLines();
+        this._renderModal();
         this.updateLineNumbers();
-        this.addEvents();
+        this._addEvents();
     }
 
-    resetTable() {
-        resetElementHTML(this.thead);
-        resetElementHTML(this.tbody);
+    _resetTable() {
+        resetElementHTML(this._thead);
+        resetElementHTML(this._tbody);
     }
 
-    renderHead() {
-        this.thead.innerHTML = `<tr><th scope="col"><strong>#</strong></th></tr>`;
-        for(const col of this.crud.getData().columns) {
+    _renderHead() {
+        this._thead.innerHTML = `<tr><th scope="col"><strong>#</strong></th></tr>`;
+        for(const col of this._crud.getColumns()) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
-            th.innerHTML = "<strong>"+col.name+"</strong>";
-            this.thead.children[0].appendChild(th);
+            th.innerHTML = `<strong>${col.name}</strong>`;
+            this._thead.children[0].appendChild(th);
         }
-        if(this.crud.isEditable()) {
+        if(this._crud.isEditable()) {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
             th.className = "text-right pr-3";
-            th.innerHTML = `<strong>${this.crud.text("table.column.actionName")}</strong>`;
-            this.thead.children[0].appendChild(th);
+            th.innerHTML = `<strong>${this._crud.text("table.column.actionName")}</strong>`;
+            this._thead.children[0].appendChild(th);
         }
     }
 
-    renderLines() {
-        if(this.getCrud().isEditable()) {
-            this.appendCrudLine(new AddCrudLine(this));
-        }
-        const values = this.crud.getData().values;
-        for(var i = 0; i < values.length; i++) {
-            this.appendCrudLine(new EditCrudLine(this, values[i]));
-        }
-    }
-
-    renderModal() {
-        const options = this.crud.getData().options;
-        if(options != null && options.deleteMessage != null) {
-            this.setDeleteModalMessage(options.deleteMessage);
-        }
-    }
-
-    updateLineNumbers() {
-        let i = 1;
-        for(const elem of this.element.getElementsByClassName('crudjs-line-number')) {
-            if(!isHidden(elem.parentNode)) {
-                elem.textContent = i++;
+    _renderLines() {
+        if(this._crud.isEditable()) {
+            const options = this._crud.getOptions();
+            if(options.examples != null) {
+                for(let i = 0; i < options.examples.length; i++) {
+                    this._examples.number++;
+                    this._appendCrudLine(new ExampleCrudLine(this, options.examples[i]));
+                }
             }
+            this._appendCrudLine(new AddCrudLine(this));
+        }
+        const values = this._crud.getValues();
+        for(let i = 0; i < values.length; i++) {
+            this._appendCrudLine(new EditCrudLine(this, values[i]));
         }
     }
 
-    addEvents() {
+    _renderModal() {
+        const options = this._crud.getOptions();
+        if(options.deleteMessage != null) {
+            this.deleteModalMessage = options._deleteMessage;
+        }
+    }
+
+    _addEvents() {
         const self = this;
-        this.element.onmousedown = function() {
-            self.horizontalScroll = this.clientWidth < this.children[0].clientWidth;
+        this._element.onmousedown = function() {
+            self._horizontalScroll = this.clientWidth < this.children[0].clientWidth;
         };
-        this.element.onmouseup = function() {
-            self.horizontalScroll = false;
+        this._element.onmouseup = function() {
+            self._horizontalScroll = false;
         };
-        this.element.addEventListener("wheel", function(event) {
-            if(event.type == 'wheel' && self.horizontalScroll) {
+        this._element.addEventListener("wheel", function(event) {
+            if(event.type == 'wheel' && self._horizontalScroll) {
                 this.scrollLeft -= ((((event.deltaY || -event.wheelDelta || event.detail) >> 10) || 1) * -50);
                 event.preventDefault();
             }
         });
     }
 
-    appendCrudLine(crudLine) {
-        this.tbody.appendChild(crudLine.element);
+    updateLineNumbers() {
+        let i = 1;
+        for(const elem of this._element.getElementsByClassName('crudjs-line-number')) {
+            if(!isHidden(elem.parentNode)) {
+                elem.textContent = i++;
+            }
+        }
+    }
+
+    // Events
+
+    helpToggleEvent() {
+        this._examples.show = !this._examples.show;
+        if(this._examples.show) {
+            for(const elem of this._element.getElementsByClassName('crudjs-example-line')) {
+                show(elem);
+            }
+            this._examples.numberShown = this._examples.number;
+        } else {
+            for(const elem of this._element.getElementsByClassName('crudjs-example-line')) {
+                hide(elem);
+            }
+            this._examples.numberShown = 0;
+        }
+    }
+
+    // Other methods
+
+    copyIntoAdd(values) {
+        for(let i = 0; i < this._lines.length; i++) {
+            if(this._lines[i].constructor.name == "AddCrudLine") {
+                this._lines[i].values = values;
+                this._lines[i].update();
+            }
+        }
+    }
+
+    _appendCrudLine(crudLine) {
+        this._lines.push(crudLine);
+        this._tbody.appendChild(crudLine.element);
         crudLine.show();
     }
 
+    deleteCrudLine(crudLine) {
+        crudLine.element.remove();
+        const dataValues = this._crud.getValues();
+        const indexV = dataValues.indexOf(crudLine.values);
+        const indexL = this._lines.indexOf(crudLine);
+        if(indexV != -1) {
+            dataValues.splice(indexV, 1);
+        }
+        if(indexL != -1) {
+            this._lines.splice(indexL, 1);
+        }
+    }
+
     appendNewEditCrudLine(editCrudLine) {
-        this.crud.getData().values.push(editCrudLine.values);
-        const editLines = this.tbody.getElementsByClassName('crudjs-edit-line');
+        this._crud.getValues().push(editCrudLine.values);
+        const editLines = this._tbody.getElementsByClassName('crudjs-edit-line');
         if(editLines.length > 0) {
-            this.tbody.insertBefore(editCrudLine.element, editLines[0]);
+            for(let i = 0; i < this._lines.length; i++) {
+                if(this._lines[i].constructor.name == "EditCrudLine") {
+                    this._lines.splice(i, 0, editCrudLine);
+                    break;
+                }
+            }
+            this._tbody.insertBefore(editCrudLine.element, editLines[0]);
         } else {
-            this.tbody.appendChild(editCrudLine.element);
+            this._lines.push(editCrudLine);
+            this._tbody.appendChild(editCrudLine.element);
         }
         editCrudLine.show();
     }
 
     disableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
+        const saveButton = this._crud.getAttr("saveButton");
+        if(saveButton != null) {
+            saveButton.disabled = true;
+        }
+        for(const elem of this._element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = true;
         }
     }
 
     enableButtons() {
-        for(const elem of this.element.getElementsByClassName('crudjs-action-btn')) {
+        const saveButton = this._crud.getAttr("saveButton");
+        if(saveButton != null) {
+            saveButton.disabled = false;
+        }
+        for(const elem of this._element.getElementsByClassName('crudjs-action-btn')) {
             elem.disabled = false;
         }
     }
 
     createModal() {
         const modalDelete = createElement(`
-        <div class="modal fade" id="`+this.deleteModalId+`" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal fade" id="${this._deleteModalId}" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">${this.crud.text("table.modal.delete.title")}</h5>
+                <h5 class="modal-title">${this._crud.text("table.modal.delete.title")}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div class="modal-body">
                 <div class="delete-message">
-                    ${this.deleteModalMessage}
+                    ${this._deleteModalMessage}
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">${this.crud.text("basic.no")}</button>
-                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">${this.crud.text("basic.yes")}</button>
+                <button type="button" class="btn btn-secondary mr-1" data-dismiss="modal">${this._crud.text("basic.no")}</button>
+                <button type="button" class="btn btn-raised btn-info crudjs-modal-valid" data-dismiss="modal">${this._crud.text("basic.yes")}</button>
               </div>
             </div>
           </div>
@@ -185,30 +252,54 @@ class CrudTable {
 
     // Getters and Setters
 
-    getElement() {
-        return this.element;
+    get element() {
+        return this._element;
     }
 
-    getDeleteModal() {
-        return this.deleteModal;
+    get crud() {
+        return this._crud;
     }
 
-    getDeleteModalId() {
-        return this.deleteModalId;
+    get lines() {
+        return this._lines;
     }
 
-    getCrud() {
-        return this.crud;
+    get deleteModal() {
+        return this._deleteModal;
     }
 
-    setDeleteModalMessage(val) {
-        this.deleteModalMessage = val;
-        if(this.deleteModal != null) {
-            const tmp = this.deleteModal.getElementsByClassName("delete-message");
+    get deleteModalId() {
+        return this._deleteModalId;
+    }
+
+    get deleteModalMessage() {
+        return this._deleteModalMessage;
+    }
+
+    get horizontalScroll() {
+        return this._horizontalScroll;
+    }
+
+    get examples() {
+        return this._examples;
+    }
+
+    set lines(val) {
+        this._lines = val;
+    }
+
+    set deleteModalMessage(val) {
+        this._deleteModalMessage = val;
+        if(this._deleteModal != null) {
+            const tmp = this._deleteModal.getElementsByClassName("delete-message");
             if(tmp.length > 0) {
-                tmp[0].textContent = this.deleteModalMessage;
+                tmp[0].textContent = this._deleteModalMessage;
             }
         }
+    }
+
+    set horizontalScroll(val) {
+        this._horizontalScroll = val;
     }
 
 }
