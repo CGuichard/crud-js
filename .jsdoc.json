@@ -1,0 +1,29 @@
+{
+    "recurseDepth": 10,
+    "sourceType": "module",
+    "plugins": [
+        "plugins/markdown"
+    ],
+    "source": {
+        "include": ["src", "README.md"],
+        "includePattern": ".js$",
+        "excludePattern": "(node_modules/|docs)"
+    },
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc"]
+    },
+    "templates": {
+        "referenceTitle": "CrudJS",
+        "cleverLinks": false,
+        "monospaceLinks": false,
+        "disableSort": false,
+        "collapse": true
+    },
+    "opts": {
+        "destination": "./docs/",
+        "encoding": "utf8",
+        "recurse": true,
+        "template": "node_modules/braintree-jsdoc-template"
+    }
+}

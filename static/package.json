@@ -1,0 +1,11 @@
+{
+  "description": "Front-end dependencies of crud-js",
+  "license": "MIT",
+  "repository": "https://github.com/CGuichard/crud-js.git",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.12.1",
+    "bootstrap-material-design": "^4.1.2",
+    "jquery": "^3.4.1",
+    "popper.js": "^1.16.1"
+  }
+}
