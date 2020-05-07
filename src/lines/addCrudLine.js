@@ -39,6 +39,12 @@ class AddCrudLine extends CrudLine {
         }
     }
 
+    /* Getters & Setters */
+
+    get role() {
+        return "ADD";
+    }
+
     /* Show methods */
 
     show() {
