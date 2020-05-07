@@ -39,6 +39,12 @@ class ExampleCrudLine extends CrudLine {
         }
     }
 
+    /* Getters & Setters */
+
+    get role() {
+        return "EXAMPLE";
+    }
+
     /* Show methods */
 
     show() {

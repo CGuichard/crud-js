@@ -35,6 +35,12 @@ class EditCrudLine extends CrudLine {
         super(crudTable, lineArray, "crudjs-edit-line");
     }
 
+    /* Getters & Setters */
+
+    get role() {
+        return "EDIT";
+    }
+
     /* Show methods */
 
     show() {

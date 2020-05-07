@@ -108,7 +108,7 @@ class CrudTable {
     _renderModal() {
         const options = this._crud.getOptions();
         if(options.deleteMessage != null) {
-            this.deleteModalMessage = options._deleteMessage;
+            this.deleteModalMessage = options.deleteMessage;
         }
     }
 
@@ -158,7 +158,7 @@ class CrudTable {
 
     copyIntoAdd(values) {
         for(let i = 0; i < this._lines.length; i++) {
-            if(this._lines[i].constructor.name == "AddCrudLine") {
+            if(this._lines[i].role === "ADD") {
                 this._lines[i].values = values;
                 this._lines[i].update();
             }
@@ -169,6 +169,14 @@ class CrudTable {
         this._lines.push(crudLine);
         this._tbody.appendChild(crudLine.element);
         crudLine.show();
+    }
+
+    hideCrudLine(crudLine) {
+        crudLine.element.remove();
+        const indexL = this._lines.indexOf(crudLine);
+        if(indexL != -1) {
+            this._lines.splice(indexL, 1);
+        }
     }
 
     deleteCrudLine(crudLine) {

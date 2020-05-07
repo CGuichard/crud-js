@@ -20,7 +20,7 @@
  * ------------------------------------------------------------------------
  */
 
-import { resetElementHTML, hide } from "../utils.js";
+import { resetElementHTML } from "../utils.js";
 import { CrudFieldFactory } from "./fields/crudFieldFactory.js";
 
 /**
@@ -85,6 +85,10 @@ class CrudLine {
     }
 
     /* Getters & Setters */
+
+    get role() {
+        return null;
+    }
 
     get crudTable() {
         return this._crudTable;
@@ -157,7 +161,7 @@ class CrudLine {
     /* Show methods */
 
     hide() {
-        hide(this.element);
+        this.crudTable.hideCrudLine(this);
     }
 
     delete() {
